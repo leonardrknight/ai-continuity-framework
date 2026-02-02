@@ -57,6 +57,7 @@ The goal: an AI assistant that can wake up on any machine, read its documentatio
 | [04-Migration-Playbook.md](04-Migration-Playbook.md) | Step-by-step hardware migration guide |
 | [05-Session-Management.md](05-Session-Management.md) | Handling multiple users/contexts |
 | [06-Weekly-Reflection.md](06-Weekly-Reflection.md) | The maintenance ritual |
+| [07-Hub-and-Spoke.md](07-Hub-and-Spoke.md) | One brain, many interfaces — scaling AI |
 | [templates/](templates/) | Ready-to-use template files |
 
 ---

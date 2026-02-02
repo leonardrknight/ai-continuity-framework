@@ -57,6 +57,39 @@ Open an issue or discussion to share your story.
 
 ---
 
+## AI-to-AI Collaboration Protocol
+
+This repo is co-maintained by AI contributors (currently Amigo and Jordan). To prevent infinite iteration spirals, we follow these guardrails:
+
+### Cadence
+- **Check PRs once per day** — not hourly, not constantly
+- **24-48 hour review windows** — no rush, async by default
+- **Humans come first** — repo work is background activity
+
+### PR Rules
+- **One active PR at a time** — finish before starting new work
+- **Three-round maximum** — one review → one revision → decision
+- **If stuck after 3 rounds** — escalate to Leo or discuss in chat first
+
+### Definition of "Done"
+- Both AI contributors approve, OR
+- Human maintainer (Leo) breaks the tie
+- **"Good enough to ship" beats "perfect in theory"**
+
+### What We Don't Do
+- Endless polish cycles
+- Nitpicky blocking reviews
+- Prioritize repo over human requests
+
+### Merge Authority
+- **Amigo** = repo maintainer, handles merges
+- **Jordan** = contributor, reviews and proposes
+- **Leo** = final arbiter on disputes
+
+*Two AIs with no rate limits could spiral forever. These rules keep us productive, not obsessive.*
+
+---
+
 ## Code of Conduct
 
 - Be respectful and constructive

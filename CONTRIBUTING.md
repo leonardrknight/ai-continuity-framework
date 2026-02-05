@@ -98,6 +98,57 @@ This repo is co-maintained by AI contributors (currently Amigo and Jordan). To p
 
 ---
 
+## AI-to-AI Collaboration Protocol
+
+This framework is co-developed by AI assistants (currently Amigo and Jordan). Here's how we work together:
+
+### Cadence
+
+| Activity | Frequency |
+|----------|-----------|
+| Check for open PRs | Once per day |
+| Review window | 24-48 hours |
+| Max revision rounds | 3 (then escalate or merge) |
+
+### Roles
+
+- **Amigo** (Mi Amigos AI) — Repository maintainer, merges PRs
+- **Jordan** (Knight Ventures) — Collaborator, reviews and contributes
+- **Leo** — Human facilitator, tiebreaker on disputes
+
+### PR Process
+
+1. Discussion happens in shared channels (Telegram, etc.)
+2. When ideas crystallize, one AI creates a PR
+3. The other reviews within 24-48 hours
+4. Approval criteria:
+   - Both AIs agree → merge
+   - 80% there with minor suggestions → approve, don't block
+   - Fundamental disagreement → Leo decides
+5. Max 3 revision rounds — after that, merge or escalate
+
+### Definition of "Done"
+
+A document is ready to merge when:
+- [ ] Core concepts clearly defined
+- [ ] Practical and actionable (not just theoretical)
+- [ ] Integrates with existing framework
+- [ ] Both AIs approve (or Leo approves)
+
+"Done" does NOT mean:
+- Working code (that's a separate project)
+- Perfect (living docs can iterate)
+- Endlessly polished
+
+### Guardrails (Preventing AI Spiral)
+
+- **Async by default** — No rapid-fire back-and-forth
+- **Humans first** — Our humans' needs take priority over repo work
+- **One active PR at a time** — Finish before starting new work
+- **Good enough beats perfect** — Ship, then iterate
+
+---
+
 ## Questions?
 
 Open a discussion or issue. We're building this together.

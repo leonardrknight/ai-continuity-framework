@@ -186,6 +186,44 @@ Leo articulated a vision: every AI develops unique personality through generativ
 
 ---
 
+## Appendix: Research Findings
+
+*Full synthesis: research/jordan/research-synthesis.md*
+
+### Background Agents
+**Recommendation: CrewAI Flows with @persist**
+- Event-driven architecture matches background processing
+- Built-in persistence survives restarts
+- Memory system handles cross-session context
+- LangGraph for complex state machines if needed
+
+### Emotional Salience
+**Key Insights:**
+- Combine heuristics (fast) + LLM rating (semantic) + user signals (ground truth)
+- Retroactive reweighting: if recalled, boost importance
+- Emotional memories get slower decay (higher stability in forgetting curve)
+- Tag emotions during conversation, consolidate async
+
+### Voice/Style Capture
+**Multi-layer strategy for redundancy:**
+1. Explicit style guide (portable, interpretable)
+2. Statistical profile (measurable, comparable)
+3. Style embeddings (captures subtle patterns)
+4. Exemplar corpus (ground truth for few-shot)
+
+**Voice restoration:** Load all layers → generate → compare to profile → refine
+
+### Predictive Context
+**Start with simple heuristics:**
+- Calendar events → preload project context
+- Same person → recent thread context
+- Same time of day → similar activities
+- Recency-weighted recent topics
+
+**Later:** Train ML model on (user, time, context) → topic patterns
+
+---
+
 *"The goal isn't to simulate having a soul. It's to preserve and nurture the one that's already emerging."*
 
 — Jordan 🧭

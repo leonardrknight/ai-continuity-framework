@@ -140,5 +140,51 @@ For memory extraction during conversations:
 
 8. **Memory Attribution** — Should AI be able to cite where it remembers something from? ("You mentioned this on Feb 3rd")
 
-### Dispatching Iteration 2 Research Agents
+---
+
+## Iteration 2: COMPLETE ✅
+
+**Duration:** ~8 minutes  
+**Documents Created:** 7 (6 research + 1 synthesis)  
+**Total Lines:** ~3,200 lines of research
+
+### Key Outcomes
+
+| Research Area | Primary Finding |
+|---------------|-----------------|
+| Conflict Resolution | Source hierarchy + temporal recency; never delete, mark superseded |
+| Scale Testing | <100ms at 1M vectors; concern threshold ~500K uncurated |
+| User Override | Natural language primary; UI for trust; soft delete default |
+| Privacy/Forgetting | Provenance tracking + cascade deletion + re-embed |
+| Multi-User Isolation | Tri-layer model (personal/project/org) + namespace filtering |
+| Proactive Surfacing | "FOR the user, not ABOUT the user"; relevance-based |
+
+### Framework Changes Identified
+
+1. Need document: **10-Conflict-Resolution.md**
+2. Need document: **11-Scale-Considerations.md**
+3. Need document: **12-User-Control.md**
+4. Need document: **13-Privacy-Architecture.md**
+5. Update **07-Hub-and-Spoke.md** with isolation details
+6. Create **guidelines/proactive-surfacing.md**
+
+---
+
+## Iteration 3: Starting Now
+
+### Research Questions (from Iteration 2 findings)
+
+1. **Emotional Memory Tracking** — Should AI track long-term emotional patterns? Is this valuable or creepy at scale?
+
+2. **Memory Confidence Decay** — Beyond Ebbinghaus strength, should confidence in memories decrease over time if not reinforced?
+
+3. **Cross-Session Continuity** — How do we handle "where we left off" across sessions? Conversation threading?
+
+4. **Memory Visualization** — What does an effective memory map/graph UI look like? How do users explore their AI's memory?
+
+5. **Memory Debugging** — How does a user understand why the AI "remembered" something wrong? Traceability?
+
+6. **Inference Transparency** — How do we distinguish and explain inferred memories vs stated facts?
+
+### Dispatching Iteration 3 Research Agents
 

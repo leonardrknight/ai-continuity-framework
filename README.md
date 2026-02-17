@@ -49,6 +49,8 @@ The goal: an AI assistant that can wake up on any machine, read its documentatio
 
 ## Framework Contents
 
+### Core Documents
+
 | Document | Purpose |
 |----------|---------|
 | [01-The-Problem.md](01-The-Problem.md) | Deep dive into why AI continuity matters |
@@ -58,7 +60,29 @@ The goal: an AI assistant that can wake up on any machine, read its documentatio
 | [05-Session-Management.md](05-Session-Management.md) | Handling multiple users/contexts |
 | [06-Weekly-Reflection.md](06-Weekly-Reflection.md) | The maintenance ritual |
 | [07-Hub-and-Spoke.md](07-Hub-and-Spoke.md) | One brain, many interfaces — scaling AI |
-| [templates/](templates/) | Ready-to-use template files |
+| [08-Multi-Agent-Memory.md](08-Multi-Agent-Memory.md) | Background agents for automatic memory management |
+| [09-Voice-Capture.md](09-Voice-Capture.md) | Preserving personality across migrations |
+
+### Templates
+
+| Template | Purpose |
+|----------|---------|
+| [templates/VOICE.md](templates/VOICE.md) | Voice profile template for capturing communication style |
+| [templates/exemplars.yaml](templates/exemplars.yaml) | Exemplar corpus for few-shot restoration |
+
+### Research
+
+| Area | Findings |
+|------|----------|
+| [research/iteration-1/](research/iteration-1/) | Background infrastructure, semantic search, voice capture, memory consolidation, cross-platform migration, processing timing |
+| [research/iteration-2/](research/iteration-2/) | Conflict resolution, scale testing, user override, privacy/forgetting, multi-user isolation, proactive surfacing |
+
+### Proposals
+
+| Proposal | Status |
+|----------|--------|
+| [proposals/memory-agent-swarm.md](proposals/memory-agent-swarm.md) | Architecture for bulletproof automated memory |
+| [proposals/soul-capture-implementation-plan.md](proposals/soul-capture-implementation-plan.md) | Implementation roadmap |
 
 ---
 

@@ -218,5 +218,153 @@ For memory extraction during conversations:
 3. Create attribution language system for surfacing
 4. Add user controls for inference transparency preferences
 
-### Dispatching Remaining Research Agents
+---
+
+## Iteration 3: COMPLETE ✅
+
+**Duration:** ~12 minutes  
+**Documents Created:** 7 (6 research + 1 synthesis)  
+**Total Lines:** ~4,750 lines of research
+
+### Key Outcomes
+
+| Research Area | Primary Finding |
+|---------------|-----------------|
+| Emotional Memory | Awareness not surveillance; tiered opt-in approach |
+| Cross-Session Continuity | Hybrid boundary detection + progressive context loading |
+| Memory Visualization | List → Timeline → Graph; source attribution is key |
+| Memory Debugging | Provenance chains + confidence indicators |
+| Inference Transparency | Stated/Inferred/Hybrid taxonomy with confidence scoring |
+| Memory Versioning | Event sourcing + snapshots ("Time Machine" not "Git") |
+
+---
+
+## Iteration 4: Starting Now
+
+### Research Questions
+
+1. **Learning from Corrections** — How should the system learn from user corrections to improve future inferences?
+
+2. **Collaborative Memory** — If multiple AIs work together, how do they share/sync memories?
+
+3. **Memory Export/Import** — Portable format for moving memories between systems?
+
+4. **Memory Search UX** — Natural language memory queries ("When did I mention X?")?
+
+5. **Performance Optimization** — Caching, precomputation, lazy loading strategies?
+
+6. **Testing & Validation** — How do we test that memory systems work correctly?
+
+### Iteration 4 Research Progress
+
+| Document | Topic | Status |
+|----------|-------|--------|
+| **01-learning-from-corrections.md** | **Learning from user corrections** | **✅ Complete** |
+| **02-collaborative-memory.md** | **Multi-AI memory sharing/sync** | **✅ Complete** |
+| 03-memory-export-import.md | Portable memory formats | Pending |
+| **04-memory-search-ux.md** | **Natural language memory queries** | **✅ Complete** |
+| 05-performance-optimization.md | Caching, precomputation, lazy loading | Pending |
+| 06-testing-validation.md | Memory system testing | Pending |
+
+### Document 01: Learning from Corrections — Complete ✅
+
+**Key Findings:**
+
+| Area | Finding |
+|------|---------|
+| **Correction Taxonomy** | Three types: Factual (update data), Inference (wrong conclusion), Pattern (systematic bias) |
+| **Feedback Signals** | Explicit (strong), gentle (medium), implied, behavioral (weak), silence (very weak) |
+| **Three-Layer Learning** | Layer 1: Fix error → Layer 2: Adjust similar inferences → Layer 3: Update meta-patterns |
+| **User Learning Profiles** | Track sensitivities, blocked patterns, correction style, learning rate per user |
+| **Overcorrection Prevention** | Scope limiting, proportional response, category independence, confidence floors (0.15) |
+| **Weight Algorithms** | Similarity-based confidence reduction with containment rules |
+
+**Core Insight:** Corrections should trigger learning at three levels — immediate (fix this error), local (reduce confidence in similar inferences), and meta (adjust pattern weights for future). The critical balance is between learning quickly and avoiding overcorrection. One coffee preference mistake shouldn't invalidate all food preferences.
+
+**The Three-Layer Model:**
+```
+LAYER 3: META-LEARNING → Update inference patterns for this user
+    ↓
+LAYER 2: LOCAL LEARNING → Reduce confidence in similar inferences
+    ↓
+LAYER 1: IMMEDIATE → Mark memory superseded, store correction
+```
+
+**Framework Changes Needed:**
+1. Add correction event logging to memory schema
+2. Create user learning profiles (sensitivities, blocked patterns)
+3. Implement pattern accuracy tracking per user
+4. Store negative examples for inference patterns
+5. Add correction signal detection in conversation processing
+
+### Document 04: Memory Search UX — Complete ✅
+
+**Key Findings:**
+
+| Area | Finding |
+|------|---------|
+| **Query Types** | 5 archetypes: Temporal, Knowledge, Retrieval, Analytical, Relational |
+| **Search Architecture** | Hybrid (BM25 + Vector, α=0.6) + metadata filtering + optional rerank |
+| **Temporal Parsing** | Calendar boundaries for "last month"; relative anchors require context |
+| **Result Presentation** | Match presentation to intent: timeline for temporal, summary for knowledge |
+| **Conversational Refinement** | Track search session state; support "earlier", "more recent", "not that" |
+| **Privacy in Search** | 4-tier model: open, searchable, protected, sealed |
+| **Operator Syntax** | Gmail-style operators (before:, type:, about:) for power users |
+
+**Core Insight:** Memory search must feel conversational, not like constructing database queries. Intent classification → route to appropriate search strategy → present results in format matching intent. Progressive disclosure (summary first, details on demand) prevents overwhelming users while maintaining depth.
+
+**Key UX Patterns:**
+1. Inline search (don't navigate away from conversation)
+2. Proactive surfacing (mention relevant memories naturally)
+3. Source attribution always (build trust)
+4. Empty state guidance (suggest alternative queries)
+
+**Framework Changes Needed:**
+1. Add query language specification to search system
+2. Implement intent classification + entity extraction pipeline
+3. Build temporal parser with relative reference resolution
+4. Create presentation templates for each intent type
+5. Add privacy_level field to memory schema
+
+### Document 02: Collaborative Memory — Complete ✅
+
+**Key Findings:**
+
+| Area | Finding |
+|------|---------|
+| **Architecture** | Federated + selective sync hybrid; each AI owns its data, explicit sharing required |
+| **Sharing Models** | 4 options analyzed: Full sync, Selective sync, Federated, Hub-spoke |
+| **What to Share** | Org facts ✅, Project context ✅, Decisions ✅; Personal prefs ❌, Emotional ❌ |
+| **Conflict Resolution** | Multi-strategy: temporal recency × source authority × provenance strength |
+| **Sync Mechanics** | Event-based primary + periodic reconciliation every 15 min |
+| **Trust Model** | Signed memories + peer trust scores + verification thresholds (≥0.85 direct, 0.50-0.69 hedge) |
+| **Privacy Zones** | Tri-zone: Private (user+AI only), Shared (explicit), Org (all AIs) |
+
+**Core Insight:** Collaborative memory isn't about making AIs identical — it's about making them coherent colleagues. Jordan and Amigo don't need to know everything each other knows; they need to know the *right things* (org facts, shared decisions) while respecting private relationships with their users.
+
+**The Federated-Selective Hybrid:**
+```
+Each AI maintains:          Shared via:
+├── Private store           ├── Event log (pub/sub)
+│   └── User-specific       ├── On-demand queries
+│       context             └── Periodic reconciliation
+└── Sharable store
+    └── Org/project
+        memories
+```
+
+**Key Safety Mechanisms:**
+1. Never-sync patterns (emotional content, personnel, strategic thinking)
+2. Context collapse prevention (Leo's concerns stay with Jordan)
+3. Trust scoring per peer AI (verified correct → +trust, incorrect → -trust)
+4. Provenance chains for memory verification
+
+**Framework Changes Needed:**
+1. Add privacy_zone and shared_with_ais to memory schema
+2. Create shared event log infrastructure
+3. Build sync engine with conflict resolution
+4. Implement memory signing and provenance tracking
+5. Add peer trust management system
+
+### Dispatching Remaining Iteration 4 Research Agents
 

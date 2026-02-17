@@ -186,5 +186,37 @@ For memory extraction during conversations:
 
 6. **Inference Transparency** — How do we distinguish and explain inferred memories vs stated facts?
 
-### Dispatching Iteration 3 Research Agents
+### Iteration 3 Research Progress
+
+| Document | Topic | Status |
+|----------|-------|--------|
+| 01-emotional-memory.md | Long-term emotional pattern tracking | Pending |
+| 02-memory-confidence-decay.md | Confidence decrease over time | Pending |
+| 03-cross-session-continuity.md | "Where we left off" threading | Pending |
+| 04-memory-visualization.md | Memory map/graph UI | Pending |
+| **05-inference-transparency.md** | **Stated vs inferred distinction** | **✅ Complete** |
+| 06-memory-debugging.md | Traceability for wrong memories | Pending |
+
+### Document 05: Inference Transparency — Complete ✅
+
+**Key Findings:**
+
+| Area | Finding |
+|------|---------|
+| **Memory Taxonomy** | Three categories: Stated (90-100%), Inferred (30-85%), Hybrid (70-95%) |
+| **Confidence Scoring** | Multi-factor: source reliability × evidence count × recency × consistency |
+| **Transparency Principle** | Users should see *why* AI thinks something, not just what |
+| **Validation Strategy** | Implicit preferred; direct validation max 1/conversation |
+| **Trust Asymmetry** | Wrong inferences damage trust more than missing facts |
+| **Inference Types** | Preference, Pattern, Relationship, Emotional, Interest, Capability |
+
+**Core Insight:** Transparency about inference sources builds trust. Users forgive wrong inferences when they understand the reasoning. They feel surveilled when inferences appear from nowhere.
+
+**Framework Changes Needed:**
+1. Add source classification (stated/inferred/hybrid) to memory schema
+2. Implement multi-factor confidence scoring
+3. Create attribution language system for surfacing
+4. Add user controls for inference transparency preferences
+
+### Dispatching Remaining Research Agents
 

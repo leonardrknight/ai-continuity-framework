@@ -2,10 +2,10 @@
 
 ## Project Identity
 
-An open-source methodology and reference architecture for AI assistant persistent memory and identity. This is a **documentation project** — no compiled code, no runtime, no build step.
+An open-source methodology and reference architecture for AI assistant persistent memory and identity. Includes the **Guardian Agent** — a cloud service that manages this repo using persistent memory.
 
 **Repo:** `ai-continuity-framework`
-**Type:** Methodology / Research / Templates
+**Type:** Methodology / Research / Templates + Guardian Agent (Next.js)
 **Governance:** FORGE Tier 0 (all changes require Leo's approval)
 
 ---
@@ -19,6 +19,7 @@ An open-source methodology and reference architecture for AI assistant persisten
 │   └── iteration-N/        ← Each has 00-synthesis.md + topic papers
 ├── proposals/              ← Implementation proposals (Soul Capture, Agent Swarm)
 ├── insights/               ← Production observations
+├── guardian/               ← Guardian Agent (Next.js + TypeScript)
 ├── docs/
 │   ├── constitution/       ← PRODUCT.md, TECH.md, GOVERNANCE.md
 │   ├── adr/                ← Architecture Decision Records
@@ -99,3 +100,50 @@ No automated tooling. Manual review for:
 | 5 | Onboarding, capacity, failure recovery, security, compliance, cost |
 | 6 | Interoperability, temporal reasoning, context switching, summarization, relationships, culture |
 | 7 | Agent architecture, NL commands, analytics, team memory, templates, long-term evolution |
+
+---
+
+## Infrastructure (DO NOT SEARCH — USE THESE VALUES)
+
+### Supabase
+- **Organization:** Knight Ventures, Inc. (`iwcqfdsbnvlofvwwbpae`)
+- **Project:** ai-continuity-framework
+- **Project Ref:** `effzofflphvbyvcenvly`
+- **Region:** us-east-1 (East US / North Virginia)
+- **Dashboard:** https://supabase.com/dashboard/project/effzofflphvbyvcenvly
+- **API URL:** `https://effzofflphvbyvcenvly.supabase.co`
+- **CLI link command:** `supabase link --project-ref effzofflphvbyvcenvly`
+
+### Vercel
+- **Team:** knightventures (`team_peXyhOy36qK8p0onzEyuSRTA`)
+- **Project:** ai-continuity-framework (`prj_nccd3R2fwFVuTK6XgkPXt6yrbHsI`)
+- **Dashboard:** https://vercel.com/knightventures/ai-continuity-framework
+- **Production URL:** https://ai-continuity-framework.vercel.app (pending first deploy)
+- **Root directory:** `guardian/`
+
+### GitHub
+- **Repo:** leonardrknight/ai-continuity-framework
+- **Main branch:** main
+- **CI/CD:** GitHub Actions (`.github/workflows/ci.yml`) — Sacred Four (typecheck, lint, test, build)
+- **Triggers:** Push/PR to main affecting `guardian/**`
+
+### Environment Files
+- **Local:** `.env.local` (gitignored, contains all secrets)
+- **Vercel:** Sync via `vercel env pull .env.local`
+- **Template:** `.env.local` contains Supabase URL/keys, Vercel IDs, GitHub App placeholders
+
+### Guardian Agent Commands
+```bash
+cd guardian
+pnpm install                 # Install dependencies
+pnpm dev                     # Development server (tsx watch)
+pnpm build                   # Production build (tsc)
+pnpm start                   # Start production server
+pnpm typecheck               # TypeScript strict check
+pnpm lint                    # ESLint + Prettier check
+pnpm test                    # Vitest (run once)
+pnpm test:watch              # Vitest (watch mode)
+
+# Sacred Four (must all pass before merge)
+pnpm typecheck && pnpm lint && pnpm test && pnpm build
+```

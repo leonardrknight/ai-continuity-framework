@@ -1,1 +1,6 @@
 .metrics/
+.vercel
+.env.local
+.env*.local
+node_modules/
+guardian/dist/

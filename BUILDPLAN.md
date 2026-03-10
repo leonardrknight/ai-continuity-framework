@@ -30,9 +30,11 @@ PRs are ordered by dependency. Each PR is independently mergeable and testable.
 
 ---
 
-### PR 2: Supabase schema + migrations
+### PR 2: Supabase schema + migrations ✅
 
 **Branch:** `feature/guardian-schema`
+**PR:** [#14](https://github.com/leonardrknight/ai-continuity-framework/pull/14) — 2026-03-10
+**Status:** DELIVERED
 **Depends on:** PR 1
 **Scope:**
 - `guardian/supabase/migrations/001_initial_schema.sql` — All tables (raw_events, extracted_memories, consolidated_memories, contributor_profiles, agent_state)

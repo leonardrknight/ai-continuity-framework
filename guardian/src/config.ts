@@ -13,6 +13,7 @@ const envSchema = z.object({
   GITHUB_APP_ID: z.string().min(1),
   GITHUB_PRIVATE_KEY: z.string().min(1),
   GITHUB_WEBHOOK_SECRET: z.string().min(1),
+  GITHUB_INSTALLATION_ID: z.string().optional(),
 
   // Anthropic
   ANTHROPIC_API_KEY: z.string().min(1),

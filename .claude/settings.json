@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(forge-a)",
+      "Skill(forge-b)",
+      "Skill(forge-c)",
+      "Skill(forge-f)",
+      "Skill(forge-o)",
+      "Skill(forge-r)",
+      "Skill(forge-g)",
+      "Skill(forge-e)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
+    ]
+  },
+  "enableAllProjectMcpServers": false
+}

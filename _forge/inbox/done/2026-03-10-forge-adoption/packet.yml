@@ -1,0 +1,6 @@
+slug: "2026-03-10-forge-adoption"
+branch: ""
+pr: ""
+status: "done"
+approved: true
+notes: "Retroactive FORGE adoption via bin/forge-adopt. Assessment in ADOPTION-ASSESSMENT.md."

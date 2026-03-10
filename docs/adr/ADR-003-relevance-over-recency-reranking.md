@@ -22,6 +22,8 @@ Adopt similarity-dominant reranking as the recommended default for AI memory sys
 
 The guiding principle: **Memory systems should emulate expertise, not news feeds.**
 
+> **Clarification:** "Relevance over recency" means relevance is *prioritized above* recency in ranking weight, not that recency is eliminated. Recency remains a scoring factor (15-20% weight) — it simply no longer dominates. See Guardian Agent Retriever spec in TECH.md for the concrete formula.
+
 ## Consequences
 
 **Positive:**

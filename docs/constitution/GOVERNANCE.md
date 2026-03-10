@@ -1,8 +1,9 @@
 # GOVERNANCE.md — AI Continuity Framework
 
-**Version:** 1.0
+**Version:** 2.0
 **Date:** 2026-03-10
-**Status:** DRAFT — Awaiting approval
+**Status:** DRAFT — Awaiting Leo's approval
+**Supersedes:** Version 1.0 (methodology-only scope)
 
 ---
 
@@ -25,6 +26,10 @@ This is a retroactively adopted project. FORGE lifecycle agents are available bu
 | Framework architecture changes | Leo | ADR required |
 | Terminology/glossary changes | Leo | Update PRODUCT.md Key Concepts |
 | FORGE tier promotion | Leo | Governance checkpoint |
+| Guardian Agent architecture changes | Leo | ADR required |
+| Guardian Agent new webhook events | Leo | PR with documented action |
+| Supabase schema migrations | Leo | PR + staging test |
+| GitHub App permission changes | Leo | PR + scope rationale |
 | README/contributing updates | Leo | Standard PR review |
 
 ---
@@ -48,6 +53,24 @@ This is a retroactively adopted project. FORGE lifecycle agents are available bu
 ### Insights
 - Production observations can be added freely. They document what happened, not what should change.
 - Insights that warrant framework changes should reference the insight and go through normal change control.
+
+### Guardian Agent (`guardian/` directory)
+
+All changes to `guardian/` require a PR with review. Additional controls by change type:
+
+| Change Type | Requirements |
+|-------------|-------------|
+| **Code changes** | PR + Sacred Four pass (`pnpm build`, `pnpm lint`, `pnpm test`, `pnpm typecheck`) |
+| **Supabase migrations** | PR + migration review by Leo. Migrations must be additive (no destructive column drops without ADR). Test against staging before merge. |
+| **GitHub App config** | PR + Leo approval. Permission scope changes require rationale in PR description. Webhook event additions must document the Guardian action triggered. |
+| **Environment variables** | Update `.env.example` in the same PR. Never commit actual secrets. |
+| **Agent behavior changes** | PR + verify against methodology docs. If behavior diverges from core docs (01-XX), the software gets fixed — docs are authoritative. |
+| **Dependency updates** | PR + `pnpm audit` clean. Major version bumps require rationale. |
+
+**Sacred Four enforcement:** All Guardian PRs must pass the four commands before merge:
+```bash
+cd guardian && pnpm build && pnpm lint && pnpm test && pnpm typecheck
+```
 
 ---
 
@@ -76,6 +99,8 @@ ADRs are required for:
 - Template schema changes
 - Promoting research findings to core recommendations
 - Changes to the document numbering or structure convention
+- Guardian Agent architecture changes (agent additions/removals, pipeline changes)
+- Destructive Supabase schema changes (column drops, table removals)
 
 ADRs are NOT required for:
 - Adding research iterations

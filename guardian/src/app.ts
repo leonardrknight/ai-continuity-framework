@@ -1,8 +1,18 @@
 import { Hono } from 'hono';
+import { serve as serveInngest } from 'inngest/hono';
 import { verifySignature, processWebhookEvent } from './github/webhooks.js';
 import { getSupabaseClient } from './db/client.js';
+import { inngest } from './inngest/client.js';
+import { extractorCron } from './inngest/functions/extractor.js';
 
 export const app = new Hono();
+
+// Inngest endpoint — serves all registered functions
+app.on(
+  ['GET', 'POST', 'PUT'],
+  '/api/inngest',
+  serveInngest({ client: inngest, functions: [extractorCron] }),
+);
 
 // Health check
 app.get('/health', (c) => {

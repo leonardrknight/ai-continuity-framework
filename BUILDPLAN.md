@@ -49,18 +49,20 @@ PRs are ordered by dependency. Each PR is independently mergeable and testable.
 
 ---
 
-### PR 3: GitHub App + webhook receiver
+### PR 3: GitHub App + webhook receiver ✅
 
 **Branch:** `feature/guardian-github`
+**PR:** [#15](https://github.com/leonardrknight/ai-continuity-framework/pull/15) — 2026-03-10
+**Status:** DELIVERED
 **Depends on:** PR 2
 **Scope:**
-- `guardian/src/github/app.ts` — GitHub App initialization (Octokit)
-- `guardian/src/github/webhooks.ts` — Event handlers for: `issues.opened`, `issue_comment`, `pull_request.opened`, `pull_request.closed`, `pull_request_review`, `push`
-- `guardian/src/github/actions.ts` — Helper to post comments, add labels
+- `guardian/src/github/webhooks.ts` — Signature verification (HMAC SHA-256, timing-safe), content extraction for 5 event types, processWebhookEvent handler
+- `guardian/src/github/actions.ts` — GitHubActionsClient interface + no-op factory
+- `guardian/src/app.ts` — `POST /api/webhooks/github` endpoint with full request lifecycle
 - Raw event capture: every webhook → `raw_events` table
-- Contributor identification: lookup/create `contributor_profiles`
+- Contributor identification: upsert `contributor_profiles`, track interaction count
 
-**Tests:** Webhook signature verification. Each event type routes correctly. Raw events are persisted. Contributor profiles are created/updated. Fixture payloads from GitHub docs.
+**Tests:** 25 new tests (4 signature, 7 content extraction, 4 helpers, 10 endpoint integration). 43 total pass.
 **Validates:** Event capture pipeline (the "firehose"). Zero data loss.
 
 ---

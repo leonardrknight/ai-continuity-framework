@@ -1,9 +1,10 @@
 # TECH.md — AI Continuity Framework
 
-**Version:** 2.0
-**Date:** 2026-03-10
-**Status:** DRAFT — Awaiting Leo's approval
-**Supersedes:** Version 1.0 (documentation-only)
+**Version:** 3.0
+**Date:** 2026-03-16
+**Status:** APPROVED
+**Approved by:** Leo Knight, 2026-03-16
+**Supersedes:** Version 2.0 (GitHub-only Guardian)
 
 ---
 
@@ -12,7 +13,7 @@
 Dual-nature repository:
 
 1. **Methodology** — Markdown documents, YAML templates, research papers. No build step.
-2. **Guardian Agent** — TypeScript cloud service. Builds, tests, deploys.
+2. **Guardian Agent** — TypeScript cloud service with GitHub integration AND conversation interface. Builds, tests, deploys.
 
 The methodology lives at the repo root. The Guardian Agent lives in `guardian/`.
 
@@ -55,10 +56,18 @@ ai-continuity-framework/
 │   │   │   ├── webhooks.ts        # Webhook event handlers
 │   │   │   └── actions.ts         # GitHub API actions (comment, label, etc.)
 │   │   ├── agents/
-│   │   │   ├── extractor.ts       # Extractor Agent
+│   │   │   ├── extractor.ts       # Extractor Agent (GitHub events)
+│   │   │   ├── scribe.ts          # Scribe Agent (conversations) [Phase 2]
 │   │   │   ├── consolidator.ts    # Consolidator Agent
 │   │   │   ├── retriever.ts       # Retriever Agent
 │   │   │   └── curator.ts         # Curator Agent
+│   │   ├── chat/                   # [Phase 2]
+│   │   │   ├── router.ts          # Chat API routes
+│   │   │   ├── response.ts        # Memory-augmented response generation
+│   │   │   └── session.ts         # Conversation session management
+│   │   ├── auth/                   # [Phase 2]
+│   │   │   ├── supabase-auth.ts   # Supabase Auth integration
+│   │   │   └── identity.ts        # Cross-channel identity linking
 │   │   ├── db/
 │   │   │   ├── client.ts          # Supabase client
 │   │   │   ├── schema.ts          # TypeScript types matching DB schema
@@ -124,66 +133,92 @@ ai-continuity-framework/
 | **Linting** | ESLint + Prettier | Standard TypeScript tooling |
 | **Container** | Docker | Self-hostable deployment |
 
+### Phase 2 Additions
+
+| Layer | Technology | Rationale |
+|-------|------------|-----------|
+| **Auth (conversation)** | Supabase Auth | Built-in email/OAuth, pairs with existing Supabase, JWT sessions |
+| **Chat frontend** | Next.js 15 + React 19 | SSR, streaming, existing team expertise |
+| **LLM (conversation)** | Claude Sonnet 4.6 via Anthropic SDK | Conversation quality requires stronger model than Haiku |
+| **Streaming** | Anthropic SDK streaming + SSE | Real-time response delivery to chat UI |
+
 ### Why Not CrewAI / LangGraph?
 
-The research (Iteration 7) specified CrewAI Flows + LangGraph for a full 6-agent swarm. Phase 1 builds 4 agents with straightforward pipelines. The Anthropic SDK with structured outputs provides everything we need without the framework overhead. This decision can be revisited in Phase 2 when Voice Keeper and Archivist add complexity.
+The research (Iteration 7) specified CrewAI Flows + LangGraph for a full 6-agent swarm. Phase 1 builds 5 agents (4 core + Scribe in Phase 2) with straightforward pipelines. The Anthropic SDK with structured outputs provides everything we need without the framework overhead. This decision can be revisited if Phase 3 (Active Memory Management) adds sufficient complexity to justify a framework.
 
 ---
 
 ## System Architecture
 
+### Hub-and-Spoke Overview
+
+Guardian is one brain with multiple interfaces. All channels feed the same memory pipeline.
+
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                          GITHUB                                       │
-│                                                                       │
-│   PR opened ──┐  Issue created ──┐  Comment posted ──┐  Push ──┐    │
-│               │                  │                    │         │    │
-└───────────────┼──────────────────┼────────────────────┼─────────┼────┘
-                │                  │                    │         │
-                ▼                  ▼                    ▼         ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                     GUARDIAN AGENT SERVICE                             │
-│                                                                       │
-│  ┌─────────────────────────────────────────────────────────────────┐ │
-│  │                  WEBHOOK RECEIVER (Express/Hono)                 │ │
-│  │                                                                  │ │
-│  │  Validates signature → Identifies contributor → Routes event    │ │
-│  └──────────────────────────────┬──────────────────────────────────┘ │
-│                                 │                                     │
-│                                 ▼                                     │
-│  ┌─────────────────────────────────────────────────────────────────┐ │
-│  │                      RAW CAPTURE (Immediate)                     │ │
-│  │                                                                  │ │
-│  │  Every GitHub event → raw_events table                          │ │
-│  │  NO PROCESSING. NO FILTERING. JUST CAPTURE.                     │ │
-│  └──────────────────────────────┬──────────────────────────────────┘ │
-│                                 │                                     │
-│         ┌──────────────┼──────────────┬──────────────┐              │
-│         ▼              ▼              ▼              ▼              │
-│  ┌────────────┐ ┌──────────────┐ ┌────────────┐ ┌────────────┐   │
-│  │ EXTRACTOR  │ │ CONSOLIDATOR │ │  RETRIEVER │ │   CURATOR  │   │
-│  │            │ │              │ │            │ │            │   │
-│  │ Scheduled: │ │ Scheduled:   │ │ On-demand: │ │ Scheduled: │   │
-│  │ Every 5min │ │ Hourly       │ │ <500ms     │ │ Daily 3 AM │   │
-│  │            │ │              │ │            │ │            │   │
-│  │ Extracts:  │ │ Dedup:       │ │ Searches:  │ │ Manages:   │   │
-│  │ • Facts    │ │ • Merge      │ │ • Semantic │ │ • Import.  │   │
-│  │ • Decisions│ │ • Link       │ │ • Keyword  │ │ • Tier     │   │
-│  │ • Prefs    │ │ • Promote    │ │ • Temporal │ │ • Profiles │   │
-│  │ • Patterns │ │              │ │ • Contrib. │ │ • Archival │   │
-│  └─────┬──────┘ └──────┬───────┘ └─────┬──────┘ └─────┬──────┘   │
-│        │               │               │              │            │
-│        └───────────────┼───────────────┼──────────────┘            │
-│                              ▼                                       │
-│  ┌─────────────────────────────────────────────────────────────────┐ │
-│  │                     SUPABASE (Postgres + pgvector)               │ │
-│  │                                                                  │ │
-│  │  raw_events → extracted_memories → consolidated_memories        │ │
-│  │  contributor_profiles │ agent_state │ retrieval_stats            │ │
-│  └─────────────────────────────────────────────────────────────────┘ │
-│                                                                       │
-└──────────────────────────────────────────────────────────────────────┘
+┌──────────────┐                              ┌──────────────────┐
+│   GITHUB     │                              │   WEB CHAT       │
+│              │                              │   [Phase 2]      │
+│  PR/Issue/   │                              │  User message    │
+│  Comment/    │                              │  via API or UI   │
+│  Push        │                              │                  │
+└──────┬───────┘                              └────────┬─────────┘
+       │                                               │
+       ▼                                               ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                    GUARDIAN AGENT SERVICE                          │
+│                                                                   │
+│  ┌─────────────────┐                    ┌──────────────────────┐ │
+│  │ WEBHOOK RECEIVER │                    │    CHAT API          │ │
+│  │ Verify signature │                    │ Auth user → Route    │ │
+│  │ ID contributor   │                    │ [Phase 2]            │ │
+│  └────────┬────────┘                    └──────────┬───────────┘ │
+│           │                                        │              │
+│           ▼                                        ▼              │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │                   RAW CAPTURE (Immediate)                    │ │
+│  │  GitHub events → raw_events    Conversations → messages     │ │
+│  └────────────────────────┬────────────────────────────────────┘ │
+│                           │                                       │
+│      ┌────────────────────┼────────────────────┐                 │
+│      ▼                    ▼                    ▼                 │
+│  ┌──────────┐     ┌──────────────┐     ┌──────────┐             │
+│  │EXTRACTOR │     │ CONSOLIDATOR │     │  SCRIBE  │             │
+│  │(GitHub)  │     │              │     │ (Chat)   │             │
+│  │Every 5min│     │ Hourly       │     │ Per-turn │             │
+│  │          │     │ Dedup/merge  │     │ [Phase 2]│             │
+│  └────┬─────┘     └──────┬───────┘     └────┬─────┘             │
+│       │                  │                   │                    │
+│       └──────────┬───────┘───────────────────┘                   │
+│                  ▼                                                │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │          extracted_memories (shared, source-agnostic)      │    │
+│  └───────────────────────────┬──────────────────────────────┘    │
+│                              ▼                                    │
+│  ┌────────────┐  ┌──────────────────────────────────────────┐   │
+│  │  RETRIEVER │  │         consolidated_memories             │   │
+│  │  On-demand │◄─│   (deduplicated, scored, tiered)          │   │
+│  │  <500ms    │  └──────────────────────────────────────────┘   │
+│  └────────────┘                    ▲                              │
+│       │                            │                              │
+│       │                    ┌───────┴──────┐                      │
+│       │                    │   CURATOR    │                      │
+│       │                    │  Daily 3 AM  │                      │
+│       │                    │ Score/tier/  │                      │
+│       │                    │ profiles     │                      │
+│       ▼                    └──────────────┘                      │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │                  SUPABASE (Postgres + pgvector)              │ │
+│  │                                                              │ │
+│  │  raw_events │ messages │ extracted_memories │ consolidated   │ │
+│  │  user_profiles │ conversations │ agent_state                │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│                                                                   │
+└──────────────────────────────────────────────────────────────────┘
 ```
+
+### Key Architectural Insight
+
+The memory swarm (Consolidator, Retriever, Curator) is **source-agnostic**. It operates on `extracted_memories` and `consolidated_memories` regardless of origin. Phase 1 feeds it from GitHub events via the Extractor. Phase 2 adds a second input via the Scribe. Both channels share the same downstream pipeline — no duplication.
 
 ---
 
@@ -734,6 +769,8 @@ Type weights: `decision: 0.9, relationship: 0.85, preference: 0.7, action_item: 
 
 ## Data Flow Summary
 
+### Phase 1: GitHub Channel
+
 ```
 GitHub Event
   │
@@ -753,7 +790,282 @@ consolidated_memories (importance scored, tiered, archived)
 Synthesized context → Guardian's LLM prompt → GitHub comment/response
 ```
 
-This directly implements the framework's capture → extract → consolidate → curate → retrieve pipeline documented in `02-Memory-Architecture.md` and the Memory Agent Swarm proposal.
+### Phase 2: Conversation Channel (additive)
+
+```
+User message (via Chat API)
+  │
+  ├──▶ messages table (immediate capture)
+  │
+  ├──▶ [Retriever, synchronous] → retrieve relevant memories for this user
+  │         │
+  │         ▼
+  │    Synthesized context + user message → Claude Sonnet → response
+  │         │
+  │         ▼
+  │    Response streamed to user + stored in messages
+  │
+  └──▶ [Scribe, per-turn or batched]
+           │
+           ▼
+      extracted_memories ──▶ same pipeline as Phase 1
+```
+
+Both channels feed the same `extracted_memories → consolidated_memories` pipeline. The Consolidator, Curator, and Retriever are source-agnostic.
+
+---
+
+## Phase 2: Conversation Architecture
+
+### Schema Additions (Migration 004+)
+
+#### Table: `user_profiles`
+
+Per-user identity and memory context for conversation users.
+
+```sql
+CREATE TABLE user_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  supabase_auth_id UUID UNIQUE,               -- links to Supabase Auth user
+  email TEXT,
+  display_name TEXT,
+
+  -- Cross-channel linking
+  github_contributor_id UUID REFERENCES contributor_profiles(id),  -- NULL until linked
+
+  -- Profile (updated by Curator)
+  first_seen_at TIMESTAMPTZ DEFAULT NOW(),
+  last_seen_at TIMESTAMPTZ DEFAULT NOW(),
+  interaction_count INTEGER DEFAULT 0,
+  summary TEXT,
+  interests TEXT[],
+  communication_style TEXT,
+
+  -- Metadata
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_user_profiles_auth ON user_profiles (supabase_auth_id);
+```
+
+#### Table: `conversations`
+
+Conversation sessions per user.
+
+```sql
+CREATE TABLE conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES user_profiles(id),
+  title TEXT,                                   -- auto-generated from first message
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'archived')),
+  message_count INTEGER DEFAULT 0,
+
+  -- Metadata
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_conversations_user ON conversations (user_id, updated_at DESC);
+```
+
+#### Table: `messages`
+
+Individual conversation turns — the raw capture for the Scribe.
+
+```sql
+CREATE TABLE messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID NOT NULL REFERENCES conversations(id),
+  user_id UUID NOT NULL REFERENCES user_profiles(id),
+
+  -- Content
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
+  content TEXT NOT NULL,
+
+  -- Processing (Scribe)
+  processed BOOLEAN DEFAULT FALSE,
+  processed_at TIMESTAMPTZ,
+
+  -- Metadata
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Scribe's work queue
+CREATE INDEX idx_messages_unprocessed
+  ON messages (created_at)
+  WHERE processed = FALSE;
+
+-- Conversation history (ordered)
+CREATE INDEX idx_messages_conversation
+  ON messages (conversation_id, created_at);
+```
+
+#### Migration 004: Schema extensions for conversation support
+
+The following additive changes are applied to existing Phase 1 tables:
+
+```sql
+-- 1. Make source_event_id nullable (was NOT NULL) so Scribe can insert without a raw_event
+ALTER TABLE extracted_memories ALTER COLUMN source_event_id DROP NOT NULL;
+
+-- 2. Add source_message_id for conversation-sourced memories
+ALTER TABLE extracted_memories ADD COLUMN source_message_id UUID REFERENCES messages(id);
+
+-- 3. Exactly one source must be set
+ALTER TABLE extracted_memories ADD CONSTRAINT chk_source_xor
+  CHECK (source_event_id IS NOT NULL OR source_message_id IS NOT NULL);
+
+-- 4. Add user_id for per-user memory scoping
+ALTER TABLE extracted_memories ADD COLUMN user_id UUID REFERENCES user_profiles(id);
+ALTER TABLE consolidated_memories ADD COLUMN user_id UUID REFERENCES user_profiles(id);
+
+-- 5. Add source_channel to distinguish memory origin
+ALTER TABLE extracted_memories
+  ADD COLUMN source_channel TEXT DEFAULT 'github'
+  CHECK (source_channel IN ('github', 'conversation'));
+
+ALTER TABLE consolidated_memories
+  ADD COLUMN source_channel TEXT DEFAULT 'github'
+  CHECK (source_channel IN ('github', 'conversation'));
+
+-- 6. Index for user-scoped queries
+CREATE INDEX idx_extracted_user ON extracted_memories (user_id, created_at DESC) WHERE user_id IS NOT NULL;
+CREATE INDEX idx_consolidated_user ON consolidated_memories (user_id, importance_score DESC) WHERE user_id IS NOT NULL;
+```
+
+These changes are additive and non-breaking. Existing Phase 1 data is unaffected (source_event_id stays populated, user_id is NULL for GitHub-sourced memories, source_channel defaults to 'github').
+
+#### RLS for Conversation Tables
+
+```sql
+-- User can only see their own conversations and messages
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "users_own_profile"
+  ON user_profiles FOR ALL
+  USING (supabase_auth_id = auth.uid());
+
+CREATE POLICY "users_own_conversations"
+  ON conversations FOR ALL
+  USING (user_id IN (
+    SELECT id FROM user_profiles WHERE supabase_auth_id = auth.uid()
+  ));
+
+CREATE POLICY "users_own_messages"
+  ON messages FOR ALL
+  USING (user_id IN (
+    SELECT id FROM user_profiles WHERE supabase_auth_id = auth.uid()
+  ));
+```
+
+### Scribe Agent
+
+**Purpose:** Extract structured memories from conversation turns in real time.
+
+**Trigger:** Inngest cron every 2 minutes. Processes unprocessed messages in batches.
+
+**Pipeline:**
+```
+messages (unprocessed)
+  → Batch up to 30 messages (grouped by conversation)
+  → For each conversation batch:
+      1. Build context: conversation thread + user profile summary
+      2. Call Claude Haiku with conversation extraction prompt
+      3. Parse structured output: memories[] with type/importance/topics
+      4. Generate embedding for each memory (OpenAI)
+      5. Insert into extracted_memories with user_id
+      6. Mark messages as processed
+  → Update agent_state
+```
+
+**Key differences from Extractor:**
+
+| Dimension | Extractor (GitHub) | Scribe (Conversation) |
+|-----------|-------------------|----------------------|
+| Input | Webhook payloads | Conversation turns |
+| Cadence | Every 5 min | Every 2 min (higher velocity) |
+| Context | Single event | Thread context (prior turns) |
+| Signals | Facts, decisions, patterns | + Thread state, tone, direction, preferences |
+| User scoping | contributor_id | user_id |
+
+**Shared with Extractor:** Embedding generation, memory insertion, `extracted_memories` table, agent_state tracking, error handling patterns.
+
+### Chat API
+
+**Endpoints:**
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `POST` | `/api/chat` | Send message, receive memory-augmented response |
+| `GET` | `/api/conversations` | List user's conversations |
+| `GET` | `/api/conversations/:id` | Get conversation history |
+| `POST` | `/api/conversations` | Start new conversation |
+
+**Chat request flow:**
+```
+POST /api/chat { conversation_id, message }
+  │
+  ├── 1. Auth: validate JWT (Supabase Auth)
+  ├── 2. Store user message in messages table
+  ├── 3. [Retriever] fetch relevant memories for this user
+  ├── 4. Build LLM prompt: system + memories + conversation history + user message
+  ├── 5. Call Claude Sonnet (streaming)
+  ├── 6. Stream response to client via SSE
+  ├── 7. Store assistant response in messages table
+  └── 8. [Scribe] queue messages for extraction (async)
+```
+
+**Response generation prompt includes:**
+- Guardian's identity/personality (from Soul docs)
+- Retrieved memories relevant to this user and topic
+- User profile summary (interests, communication style)
+- Recent conversation history (last N turns)
+
+### Cross-Channel Identity Linking
+
+When a GitHub contributor also uses the chat interface:
+
+```
+User signs up with email → user_profiles created
+User links GitHub account → github_contributor_id set on user_profiles
+  → Retriever now pulls memories from BOTH channels for this person
+  → Curator merges profile data from both sources
+```
+
+This is optional and user-initiated. Unlinked identities remain separate.
+
+---
+
+## Phase 3: Active Memory Management (Architecture Preview)
+
+Phase 3 adds three components that make Guardian's memory truly unlimited by managing what's in the context window at any given time.
+
+### Context Window Monitor
+
+Tracks token usage and proactively pages low-value context to warm storage.
+
+```
+Context Window Budget:
+├── Identity Zone (10-15%) — Soul docs, system prompt [pinned]
+├── Active Thread Zone (50-60%) — current conversation [managed]
+├── Retrieved Memory Zone (15-20%) — from long-term storage [rotated]
+└── Buffer Zone (10-15%) — headroom for new messages
+```
+
+When buffer fills, lowest-relevance blocks are paged out, leaving one-line stubs that the Retriever can re-hydrate if the conversation circles back.
+
+### Retrieval Anticipator
+
+Wraps the Retriever with a prediction layer. Monitors conversation stream for signals (entity mentions, topic shifts, temporal references) and pre-fetches relevant memories before they're explicitly needed.
+
+### Thread-Aware Memory
+
+The Scribe tracks conversational threads (topic, step-by-step progress, cross-references) so Guardian can resume interrupted threads without the user having to re-explain where they left off.
+
+**Detailed specifications for Phase 3 will be added when Phase 2 is stable.**
 
 ---
 
@@ -822,6 +1134,22 @@ LOG_LEVEL=info
 
 Fly.io is recommended for Phase 1: single container, always-on (webhooks need instant response), low cost, easy Docker deployment.
 
+### Phase 2 Deployment
+
+Phase 2 adds a Next.js frontend for the chat interface. Two deployment options:
+
+**Option A: Monorepo on Vercel** (recommended)
+- Chat UI (Next.js) deploys to Vercel with `guardian/` as root directory
+- Guardian backend stays on Fly.io (webhooks + agents)
+- Chat API proxied through Next.js API routes → Fly.io backend
+
+**Option B: All on Fly.io**
+- Guardian serves both webhook API and chat UI
+- Single container, simpler ops
+- Trade-off: no Vercel edge optimization for chat UI
+
+Recommendation: Start with Option B for simplicity, evaluate Option A if chat latency matters.
+
 ---
 
 ## Test Architecture
@@ -834,10 +1162,12 @@ Fly.io is recommended for Phase 1: single container, always-on (webhooks need in
 
 | Layer | Type | Coverage Target |
 |-------|------|-----------------|
-| Agents (Extractor, Consolidator, Retriever, Curator) | Unit | 80%+ |
+| Agents (Extractor, Scribe, Consolidator, Retriever, Curator) | Unit | 80%+ |
 | GitHub webhook handling | Integration | 90%+ |
+| Chat API (auth, message flow, response generation) | Integration | 90%+ |
 | Supabase queries | Integration | 80%+ |
 | End-to-end (webhook → memory → response) | E2E | Key paths |
+| End-to-end (chat → scribe → memory → retrieval → response) | E2E | Key paths |
 
 ### Mocking Strategy
 
@@ -917,8 +1247,9 @@ Unchanged. Core methodology documents use sequential numbering: `NN-Title.md`. R
 - **ADR-001:** Scaffolding vs Soul memory model
 - **ADR-002:** Provider-neutral methodology
 - **ADR-003:** Relevance over recency reranking
-- **ADR-004:** Guardian Agent auth architecture *(new, required)*
+- **ADR-004:** Guardian Agent auth architecture (Phase 1 — GitHub single-plane)
 - **ADR-005:** Phase 1 agent architecture — 4 agents with separate Consolidator
+- **ADR-006:** Dual-plane auth for conversation channel (Phase 2) *(new, required)*
 
 ---
 

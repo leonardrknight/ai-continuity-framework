@@ -1,7 +1,8 @@
 # ADR-004: Guardian Agent Auth Architecture
 
 **Date:** 2026-03-10
-**Status:** Proposed
+**Status:** Accepted
+**Extended by:** ADR-006 (dual-plane auth for Phase 2 conversation channel)
 
 ---
 

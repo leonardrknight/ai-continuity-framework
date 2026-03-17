@@ -22,7 +22,7 @@ Adopt similarity-dominant reranking as the recommended default for AI memory sys
 
 The guiding principle: **Memory systems should emulate expertise, not news feeds.**
 
-> **Clarification:** "Relevance over recency" means relevance is *prioritized above* recency in ranking weight, not that recency is eliminated. Recency remains a scoring factor (15-20% weight) — it simply no longer dominates. See Guardian Agent Retriever spec in TECH.md for the concrete formula.
+> **Clarification:** "Relevance over recency" means relevance is *prioritized above* recency in ranking weight, not that recency is eliminated. Recency remains a scoring factor (15-20% weight) — it simply no longer dominates. The Guardian Retriever's concrete formula (`0.50 * semantic + 0.30 * importance + 0.20 * recency`) in TECH.md implements this principle: recency is the lowest-weighted factor at 20%. The original 85/15 guideline was for a two-factor model (similarity + recency); the three-factor formula distributes the "relevance" portion across semantic similarity and importance score. The minimum similarity threshold was raised from 0.35 to 0.5 for precision in the Guardian implementation.
 
 ## Consequences
 

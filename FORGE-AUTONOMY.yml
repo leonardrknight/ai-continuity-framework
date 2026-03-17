@@ -4,11 +4,23 @@
 
 schema: 0.2
 template_version: "2.0"
-tier: 0
+tier: 2
 external_project: true
 
-# Tier 0: All agent actions require explicit human approval.
+# Tier 2: Agents auto-dispatch with logging. Human gates for blast-radius items only.
+# Scope: Phase 1 sprint (PRs 5-8). @G routes, @E executes, @Q validates.
 # external_project: true — project lives outside ~/forge-projects/ (waives location check only).
+
+allowed_transitions:
+  - G -> E   # @G dispatches to @E for implementation
+  - E -> Q   # @E hands to @Q for quality gate
+  - Q -> G   # @Q reports back to @G for routing
+  - G -> R   # @G dispatches to @R for review if needed
+
+human_gates:
+  - destructive_schema_changes
+  - github_app_permission_changes
+  - production_deployment
 
 transitions:
   - date: "2026-03-10"
@@ -17,3 +29,6 @@ transitions:
   - date: "2026-03-10"
     event: "phase-4-activation-complete"
     details: "CLAUDE.md generated, Sacred Four audited (N/A), 3 ADRs created, gates verified"
+  - date: "2026-03-16"
+    event: "tier-upgrade-0-to-2"
+    details: "Leo approved full auto for Phase 1 sprint (PRs 5-8). PRODUCT.md v3.0, TECH.md v3.0, BUILDPLAN v3 all approved. @R review passed."

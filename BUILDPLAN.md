@@ -1,8 +1,9 @@
-# BUILDPLAN.md — Guardian Agent Phase 1
+# BUILDPLAN.md — Guardian Agent
 
-**Date:** 2026-03-10
-**Status:** DRAFT — Awaiting Leo's approval
-**Prerequisite:** TECH.md v2.0 approved
+**Date:** 2026-03-16
+**Status:** APPROVED
+**Approved by:** Leo Knight, 2026-03-16
+**Prerequisite:** TECH.md v3.0 approved
 
 ---
 
@@ -150,7 +151,7 @@ PRs are ordered by dependency. Each PR is independently mergeable and testable.
 
 ---
 
-## Milestone Summary
+## Phase 1 Milestone Summary
 
 | PR | Deliverable | Validates |
 |----|-------------|-----------|
@@ -161,7 +162,165 @@ PRs are ordered by dependency. Each PR is independently mergeable and testable.
 | 5 | Consolidator Agent | Extracted memories deduplicated into consolidated storage |
 | 6 | Retriever Agent | Context recalled on demand (two-stage ranking) |
 | 7 | Curator Agent | Memory lifecycle self-maintains |
-| 8 | Integration + deploy | Guardian is live, dogfooding |
+| 8 | Integration + deploy | Guardian is live, dogfooding on GitHub |
+
+---
+
+## Phase 2: Conversation + Unlimited Memory (PRs 9-13)
+
+**Prerequisite:** Phase 1 stable, GitHub dogfooding validated
+
+### PR 9: Schema migration — users, conversations, messages
+
+**Branch:** `feature/guardian-chat-schema`
+**Depends on:** PR 8 (Phase 1 complete)
+**Scope:**
+- `guardian/supabase/migrations/004_conversation_tables.sql` — `user_profiles`, `conversations`, `messages` tables
+- `guardian/supabase/migrations/005_conversation_rls.sql` — RLS policies for per-user isolation
+- Add `user_id` column to `extracted_memories` and `consolidated_memories` (nullable, additive)
+- Update `guardian/src/db/schema.ts` with new TypeScript types
+- Update `guardian/src/db/queries.ts` with conversation query helpers
+- Update `match_memories()` function to optionally filter by `user_id`
+
+**Tests:** Schema applies cleanly. RLS verified: user A cannot read user B's data. Existing GitHub pipeline unaffected.
+**Validates:** Conversation data model is sound. Per-user isolation works at DB level.
+
+---
+
+### PR 10: Supabase Auth + user management
+
+**Branch:** `feature/guardian-auth`
+**Depends on:** PR 9
+**Scope:**
+- `guardian/src/auth/supabase-auth.ts` — Auth middleware, JWT validation, session management
+- `guardian/src/auth/identity.ts` — User profile creation on signup, GitHub identity linking endpoint
+- Auth configuration in Supabase dashboard (email/password, optionally GitHub OAuth)
+- Protected routes: all `/api/chat` and `/api/conversations` endpoints require auth
+
+**Tests:** Signup/login flow. JWT validation on protected routes. Unauthenticated requests rejected. Profile created on first login.
+**Validates:** Conversation users can authenticate. Per-user scoping works end-to-end.
+
+---
+
+### PR 11: Chat API + memory-augmented responses
+
+**Branch:** `feature/guardian-chat-api`
+**Depends on:** PR 10
+**Scope:**
+- `guardian/src/chat/router.ts` — `POST /api/chat`, `GET /api/conversations`, `GET /api/conversations/:id`, `POST /api/conversations`
+- `guardian/src/chat/response.ts` — Memory-augmented response generation:
+  1. Retriever fetches relevant memories for this user
+  2. Build system prompt with Guardian identity + retrieved memories + user profile
+  3. Call Claude Sonnet with streaming
+  4. Store both user message and assistant response in `messages`
+- `guardian/src/chat/session.ts` — Conversation session management (create, list, resume)
+- Wire into `guardian/src/app.ts`
+
+**Tests:** Send message → get response with memory context. Conversation history persists. Response quality baseline (memories surface when relevant). Streaming works.
+**Validates:** You can talk to Guardian and it responds with memory. The core experience works.
+
+---
+
+### PR 12: Scribe Agent
+
+**Branch:** `feature/guardian-scribe`
+**Depends on:** PR 11
+**Scope:**
+- `guardian/src/agents/scribe.ts` — Conversation extraction pipeline:
+  - Batch unprocessed messages (grouped by conversation)
+  - Build conversation context (thread + user profile)
+  - Call Claude Haiku with conversation extraction prompt
+  - Generate embeddings, insert into `extracted_memories` with `user_id`
+  - Mark messages as processed
+- `guardian/src/llm/prompts.ts` — Add `CONVERSATION_EXTRACTION_PROMPT` (adapted from `EXTRACTION_SYSTEM_PROMPT` for conversational input)
+- `guardian/src/inngest/functions/scribe.ts` — Inngest cron every 2 minutes
+
+**Tests:** Given fixture conversation turns, produces expected memories. Thread context improves extraction quality. User preferences and decisions are captured. Emotional valence extracted from conversation tone.
+**Validates:** Conversations feed the memory pipeline. The Scribe → Consolidator → Retriever loop works end-to-end.
+
+---
+
+### PR 13: Web chat interface
+
+**Branch:** `feature/guardian-chat-ui`
+**Depends on:** PR 12
+**Scope:**
+- Simple chat UI (Next.js or static HTML + JS — keep it minimal)
+- Login/signup screen (Supabase Auth UI)
+- Conversation list sidebar
+- Chat view with streaming responses
+- Mobile-responsive
+- Deploy alongside Guardian service
+
+**Tests:** Manual testing: signup, login, send messages, see responses, switch conversations. Verify memory retrieval visible in responses.
+**Validates:** People can touch and interact with Guardian. The unlimited memory chatbot is real and tangible.
+
+---
+
+## Phase 2 Milestone Summary
+
+| PR | Deliverable | Validates |
+|----|-------------|-----------|
+| 9 | Conversation schema + user isolation | Data model supports conversations |
+| 10 | Auth + user management | Users can sign up and authenticate |
+| 11 | Chat API + memory responses | Guardian responds with memory context |
+| 12 | Scribe Agent | Conversations feed the memory pipeline |
+| 13 | Web chat UI | People can interact with Guardian |
+
+---
+
+## Phase 3: Active Memory Management (PRs 14-16)
+
+**Prerequisite:** Phase 2 stable, conversations flowing
+
+### PR 14: Context Window Monitor
+
+**Branch:** `feature/guardian-context-monitor`
+**Depends on:** PR 13
+**Scope:**
+- Token budget tracker (monitors context usage per conversation)
+- Relevance scoring per message block
+- Paging protocol: offload low-relevance blocks to storage, leave one-line stubs
+- Re-hydration: Retriever pulls back paged memories when referenced
+
+**Validates:** Long conversations don't degrade. Context is managed, not lost.
+
+---
+
+### PR 15: Retrieval Anticipator
+
+**Branch:** `feature/guardian-anticipator`
+**Depends on:** PR 14
+**Scope:**
+- Conversation stream analyzer (entity mentions, topic shifts, temporal references)
+- Prediction confidence scoring
+- Pre-fetch queue with tiered injection (inject now / stage / index only)
+- Accuracy tracking feedback loop
+
+**Validates:** Guardian pre-loads relevant context before being asked. "It just knows."
+
+---
+
+### PR 16: Thread-aware memory
+
+**Branch:** `feature/guardian-threads`
+**Depends on:** PR 15
+**Scope:**
+- Thread tracking in Scribe (thread_id, step_number, status)
+- Thread resumption protocol
+- Cross-reference linking between related threads
+
+**Validates:** Guardian can resume interrupted threads without the user re-explaining.
+
+---
+
+## Phase 3 Milestone Summary
+
+| PR | Deliverable | Validates |
+|----|-------------|-----------|
+| 14 | Context Window Monitor | Long conversations stay coherent |
+| 15 | Retrieval Anticipator | Predictive memory pre-fetch works |
+| 16 | Thread-aware memory | Interrupted threads resume cleanly |
 
 ---
 
@@ -171,9 +330,12 @@ PRs are ordered by dependency. Each PR is independently mergeable and testable.
 |------|------------|
 | LLM extraction quality is poor | Start with high-importance events only (PRs, not every commit). Tune prompts iteratively. |
 | Retrieval latency > 500ms | Semantic search alone may suffice; skip keyword search as fallback. Pre-compute embeddings. |
-| Cost overrun from LLM calls | Haiku for extraction, batch processing, skip low-signal events (bot comments, CI status). |
+| Cost overrun from LLM calls | Haiku for extraction/scribe, Sonnet for conversation responses. Batch processing. Skip low-signal events. |
 | Webhook reliability | GitHub retries failed deliveries. Idempotency via `github_delivery_id` UNIQUE constraint. |
 | Schema needs changes mid-build | Supabase migrations are additive. Non-breaking column additions are fine. |
+| Chat response latency | Retriever must be fast (<500ms). Pre-compute embeddings. Streaming masks LLM latency. |
+| Memory isolation breach | RLS at DB level + application-level user scoping. Test with multi-user scenarios. |
+| Scribe extraction quality for conversations | Different prompt tuning needed vs GitHub events. Iterate on conversation extraction prompt. |
 
 ---
 

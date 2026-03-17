@@ -1,0 +1,1 @@
+{"timestamp":"2026-03-11T00:00:00Z","tier":0,"source_role":"human","target_role":"G","request_type":"policy_change","action":"tier_upgrade_requested","payload_summary":"Leo requests 'full auto' to finish PRs 5-8. @G presenting options for tier upgrade.","event_id":"evt_20260311_000000_h_g_tierup"}

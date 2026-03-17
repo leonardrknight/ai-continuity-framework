@@ -1,0 +1,12 @@
+slug: "2026-03-12-active-memory-management"
+branch: ""
+pr: ""
+status: "active"
+approved: false
+source: "Leo (conversation with CC, 2026-03-12)"
+target: "@F (Frame)"
+notes: >
+  Research packet for active context window management — replacing blunt compaction
+  with continuous memory paging, background scribe agents, and predictive retrieval.
+  Extends the existing Guardian swarm architecture into real-time conversation contexts.
+  Leo wants @F to evaluate whether this can be woven into the existing plan.

@@ -176,3 +176,73 @@ ${newContent}
 
 Merge these two memories into a single, comprehensive memory.`;
 }
+
+// -- Contributor Profile Synthesis Prompts --
+
+/** Schema for the synthesized contributor profile from the LLM. */
+export interface ProfileSynthesisLLM {
+  summary: string;
+  interests: string[];
+  expertise: string[];
+  communication_style: string;
+}
+
+export const PROFILE_SYNTHESIS_PROMPT = `You are a contributor profile synthesis agent for the ai-continuity-framework GitHub repository.
+Your job is to analyze a contributor's memories and generate a comprehensive profile.
+
+The repository is an open-source methodology and reference architecture for AI assistant persistent memory and identity.
+
+Guidelines:
+- Summary should be 1-3 sentences describing the contributor's role and focus areas
+- Interests should be topics they frequently engage with (lowercase hyphenated)
+- Expertise should be technical skills and domain knowledge demonstrated
+- Communication style should describe how they communicate (e.g., "concise and technical", "detailed and thorough")
+- Base your analysis only on the provided memories — do not invent information
+- If insufficient data exists for a field, provide a reasonable minimal response`;
+
+export const PROFILE_SYNTHESIS_TOOL_SCHEMA: Anthropic.Tool = {
+  name: 'synthesize_profile',
+  description: 'Synthesize a contributor profile from their memories',
+  input_schema: {
+    type: 'object',
+    properties: {
+      summary: {
+        type: 'string',
+        description: 'A 1-3 sentence summary of the contributor',
+      },
+      interests: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Topics the contributor frequently engages with',
+      },
+      expertise: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Technical skills and domain knowledge demonstrated',
+      },
+      communication_style: {
+        type: 'string',
+        description: 'Description of how the contributor communicates',
+      },
+    },
+    required: ['summary', 'interests', 'expertise', 'communication_style'],
+  },
+};
+
+/** Build the user message for synthesizing a contributor profile. */
+export function buildProfileSynthesisMessage(
+  username: string,
+  memories: { content: string; memory_type: string; topics: string[] | null }[],
+): string {
+  const memoryLines = memories.map((m) => {
+    const topicStr = m.topics?.length ? ` [${m.topics.join(', ')}]` : '';
+    return `- (${m.memory_type}${topicStr}) ${m.content}`;
+  });
+
+  return `Contributor: ${username}
+
+Their memories:
+${memoryLines.join('\n')}
+
+Synthesize a profile for this contributor based on their memories.`;
+}

@@ -294,6 +294,41 @@ export function buildChatContextBlock(
   return sections.join('\n\n');
 }
 
+// -- Conversation Extraction Prompts (Scribe Agent) --
+
+export const CONVERSATION_EXTRACTION_PROMPT = `You are a memory extraction agent processing conversation turns. Extract structured memories that capture important information the user has shared — facts about themselves, decisions they've made, preferences they've expressed, questions they've asked, relationships they've mentioned, and patterns in how they communicate.
+
+Also extract important information from assistant responses — decisions made, recommendations given, explanations provided, and commitments made.
+
+Guidelines:
+- Extract facts, decisions, preferences, patterns, questions, action items, and relationships
+- Assign importance_score (0-1): casual chat ~0.2, personal preferences ~0.5, important decisions ~0.8, life events ~0.9
+- Assign confidence_score (0-1): explicit statements ~0.9, inferred patterns ~0.6
+- source_type: "stated" for explicit content, "inferred" for implied meaning
+- emotional_valence (-1 to 1): negative sentiment = -1, neutral = 0, positive = 1. null if no emotional content.
+- emotional_arousal (0 to 1): calm = 0, highly energetic = 1. null if no emotional content.
+- Topics should be lowercase, hyphenated (e.g., "personal-preference", "project-decision")
+- Entities should be usernames, names, file paths, or concept names
+- Skip trivial messages like "ok", "thanks", simple greetings with no substance
+- If the conversation has no meaningful content to extract, return an empty array`;
+
+export const CONVERSATION_EXTRACTION_TOOL_SCHEMA: Anthropic.Tool = EXTRACTION_TOOL_SCHEMA;
+
+/** Format conversation messages for extraction by the Scribe agent. */
+export function buildConversationExtractionMessage(
+  messages: { role: string; content: string }[],
+  username: string,
+): string {
+  const formatted = messages.map((m) => {
+    const speaker = m.role === 'user' ? `User (${username})` : 'Assistant';
+    return `${speaker}: ${m.content}`;
+  });
+
+  return `Conversation with ${username}:
+
+${formatted.join('\n\n')}`;
+}
+
 // -- Response Generation Prompts --
 
 export const RESPONSE_SYSTEM_PROMPT = `You are Guardian, an AI memory agent for the ai-continuity-framework GitHub repository.

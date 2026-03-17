@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { serveStatic } from '@hono/node-server/serve-static';
 import { serve as serveInngest } from 'inngest/hono';
 import {
   verifySignature,
@@ -16,6 +17,21 @@ import { responderHandler } from './inngest/functions/responder.js';
 import { chatRouter, conversationsRouter } from './chat/router.js';
 
 export const app = new Hono();
+
+// Public config endpoint — exposes safe-to-share Supabase config for the frontend
+app.get('/api/config', (c) => {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return c.json({ error: 'Server configuration incomplete' }, 500);
+  }
+
+  return c.json({
+    supabaseUrl,
+    supabaseAnonKey,
+  });
+});
 
 // Chat API routes (authenticated)
 app.route('/api/chat', chatRouter);
@@ -127,3 +143,9 @@ app.post('/api/webhooks/github', async (c) => {
     return c.json({ error: 'Internal server error' }, 500);
   }
 });
+
+// Serve static files from public/ directory
+app.use('/*', serveStatic({ root: './public' }));
+
+// Fallback: serve index.html for root and unknown non-API paths (SPA-style)
+app.get('/', serveStatic({ root: './public', path: '/index.html' }));

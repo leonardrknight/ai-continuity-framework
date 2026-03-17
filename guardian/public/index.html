@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guardian</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Auth Screen -->
+  <div id="auth-screen">
+    <div class="auth-container">
+      <div class="auth-header">
+        <div class="auth-logo">Guardian</div>
+        <div class="auth-subtitle">AI memory &amp; continuity agent</div>
+      </div>
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Log in</button>
+          <button class="auth-tab" data-tab="signup">Sign up</button>
+        </div>
+        <form id="auth-form" class="auth-form" autocomplete="on">
+          <div class="form-group">
+            <label for="auth-email">Email</label>
+            <input type="email" id="auth-email" name="email" required placeholder="you@example.com" autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label for="auth-password">Password</label>
+            <input type="password" id="auth-password" name="password" required placeholder="Enter password" minlength="6" autocomplete="current-password">
+          </div>
+          <button type="submit" class="auth-btn" id="auth-submit">Log in</button>
+          <div class="auth-error" id="auth-error"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Screen -->
+  <div id="chat-screen">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">Guardian</span>
+        <button class="new-chat-btn" id="new-chat-btn" title="New conversation">+</button>
+      </div>
+      <div class="conversation-list" id="conversation-list"></div>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <span class="user-email" id="user-email"></span>
+          <button class="logout-btn" id="logout-btn">Log out</button>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Chat Area -->
+    <main class="chat-area">
+      <div class="chat-header">
+        <button class="mobile-menu-btn" id="mobile-menu-btn">&#9776;</button>
+        <span class="chat-title" id="chat-title">Guardian</span>
+      </div>
+
+      <div class="messages-container" id="messages-container">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-state-icon">&#9672;</div>
+          <div class="empty-state-title">Start a conversation</div>
+          <div class="empty-state-text">Send a message to Guardian. Your conversations are persisted and memory-augmented.</div>
+        </div>
+      </div>
+
+      <!-- Typing indicator -->
+      <div class="typing-indicator" id="typing-indicator">
+        <div class="message-avatar" style="background: var(--accent-dim); color: white;">G</div>
+        <div class="typing-dots">
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea id="message-input" placeholder="Message Guardian..." rows="1"></textarea>
+          <button class="send-btn" id="send-btn" disabled title="Send message">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

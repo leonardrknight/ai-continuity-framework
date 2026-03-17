@@ -244,6 +244,7 @@ describe('Retriever Agent', () => {
       {} as never,
       'test query',
       'leonardrknight/ai-continuity-framework',
+      undefined,
       'contrib-001',
     );
 
@@ -342,6 +343,7 @@ describe('Retriever Agent', () => {
       {} as never,
       'test query',
       'leonardrknight/ai-continuity-framework',
+      undefined,
       'contrib-001',
     );
 
@@ -359,6 +361,7 @@ describe('Retriever Agent', () => {
       {} as never,
       'test query',
       'leonardrknight/ai-continuity-framework',
+      undefined,
       'contrib-001',
     );
 
@@ -398,6 +401,7 @@ describe('Retriever Agent', () => {
       {} as never,
       'test query',
       'leonardrknight/ai-continuity-framework',
+      undefined,
       'contrib-001',
     );
 

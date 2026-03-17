@@ -11,6 +11,7 @@ import {
   updateConversationMessageCount,
 } from '../db/queries.js';
 import { generateChatResponse, generateAutoTitle } from './response.js';
+import { shouldQuickAck, getQuickAck } from './quick-ack.js';
 
 export const chatRouter = new Hono();
 export const conversationsRouter = new Hono();
@@ -59,7 +60,7 @@ chatRouter.post('/', async (c) => {
     }
   }
 
-  // Store user message
+  // Store user message (always do this immediately - verbatim capture)
   const userMsg = await insertMessage(client, {
     conversation_id: conversationId,
     user_id: userProfile.id,
@@ -67,13 +68,27 @@ chatRouter.post('/', async (c) => {
     content: body.message.trim(),
   });
 
-  // Generate memory-augmented response
-  const { text, memoriesUsed } = await generateChatResponse(
-    client,
-    body.message.trim(),
-    conversationId,
-    userProfile.id,
-  );
+  // Check if we should use quick-ack mode (user is sharing, not asking)
+  const useQuickAck = shouldQuickAck(body.message.trim());
+
+  let text: string;
+  let memoriesUsed: number;
+
+  if (useQuickAck) {
+    // Quick-ack mode: return fast acknowledgment, let background agents process
+    text = getQuickAck();
+    memoriesUsed = 0;
+  } else {
+    // Full response mode: user is asking a question, do full retrieval + LLM
+    const response = await generateChatResponse(
+      client,
+      body.message.trim(),
+      conversationId,
+      userProfile.id,
+    );
+    text = response.text;
+    memoriesUsed = response.memoriesUsed;
+  }
 
   // Store assistant response
   const assistantMsg = await insertMessage(client, {
@@ -94,6 +109,7 @@ chatRouter.post('/', async (c) => {
     assistant_message_id: assistantMsg.id,
     response: text,
     memories_used: memoriesUsed,
+    quick_ack: useQuickAck, // Let client know which mode was used
   });
 });
 

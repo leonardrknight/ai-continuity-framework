@@ -17,7 +17,7 @@ import {
 } from '../db/queries.js';
 import type { ConsolidatedMemory, MemoryType, MemoryTier } from '../db/schema.js';
 
-const CURATION_MODEL = 'claude-haiku-4-20250514';
+const CURATION_MODEL = 'claude-3-haiku-20240307';
 const MAX_LLM_RETRIES = 3;
 const BATCH_SIZE = 100;
 

@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { serveStatic } from '@hono/node-server/serve-static';
-import { serve as serveInngest } from 'inngest/hono';
 import {
   verifySignature,
   processWebhookEvent,
@@ -8,12 +7,7 @@ import {
   extractRepoId,
 } from './github/webhooks.js';
 import { getSupabaseClient } from './db/client.js';
-import { inngest } from './inngest/client.js';
-import { extractorCron } from './inngest/functions/extractor.js';
-import { consolidatorCron } from './inngest/functions/consolidator.js';
-import { curatorCron } from './inngest/functions/curator.js';
-import { scribeCron } from './inngest/functions/scribe.js';
-import { responderHandler } from './inngest/functions/responder.js';
+import { isGitHubConfigured, isInngestConfigured } from './config.js';
 import { chatRouter, conversationsRouter } from './chat/router.js';
 
 export const app = new Hono();
@@ -37,22 +31,46 @@ app.get('/api/config', (c) => {
 app.route('/api/chat', chatRouter);
 app.route('/api/conversations', conversationsRouter);
 
-// Inngest endpoint — serves all registered functions
-app.on(
-  ['GET', 'POST', 'PUT'],
-  '/api/inngest',
-  serveInngest({
-    client: inngest,
-    functions: [extractorCron, consolidatorCron, curatorCron, scribeCron, responderHandler],
-  }),
-);
+// Inngest endpoint — only active when Inngest is configured
+if (isInngestConfigured()) {
+  import('inngest/hono').then(({ serve: serveInngest }) => {
+    import('./inngest/client.js').then(({ inngest }) => {
+      Promise.all([
+        import('./inngest/functions/extractor.js'),
+        import('./inngest/functions/consolidator.js'),
+        import('./inngest/functions/curator.js'),
+        import('./inngest/functions/scribe.js'),
+        import('./inngest/functions/responder.js'),
+      ]).then(([extractor, consolidator, curator, scribe, responder]) => {
+        app.on(
+          ['GET', 'POST', 'PUT'],
+          '/api/inngest',
+          serveInngest({
+            client: inngest,
+            functions: [
+              extractor.extractorCron,
+              consolidator.consolidatorCron,
+              curator.curatorCron,
+              scribe.scribeCron,
+              responder.responderHandler,
+            ],
+          }),
+        );
+      });
+    });
+  });
+}
 
 // Health check
 app.get('/health', (c) => {
-  return c.json({ status: 'ok' });
+  return c.json({
+    status: 'ok',
+    github: isGitHubConfigured() ? 'configured' : 'not configured',
+    inngest: isInngestConfigured() ? 'configured' : 'not configured',
+  });
 });
 
-// GitHub webhook endpoint
+// GitHub webhook endpoint — always registered, guards internally
 app.post('/api/webhooks/github', async (c) => {
   const eventType = c.req.header('x-github-event');
   const deliveryId = c.req.header('x-github-delivery');
@@ -97,29 +115,31 @@ app.post('/api/webhooks/github', async (c) => {
     const client = getSupabaseClient();
     const result = await processWebhookEvent(client, eventType, deliveryId, payload);
 
-    // Fire-and-forget: queue response handling via Inngest
-    // Don't await — webhook must return 201 immediately
-    const composite = compositeEventType(
-      eventType,
-      payload as Record<string, unknown> & { action?: string },
-    );
-    const repoId = extractRepoId(
-      payload as Record<string, unknown> & { repository?: { full_name?: string } },
-    );
-    inngest
-      .send({
-        name: 'guardian/event.respond',
-        data: {
-          eventType: composite,
-          payload,
-          repoId,
-          rawEventId: result.rawEventId,
-          contributorId: result.contributorId,
-        },
-      })
-      .catch((err: unknown) => {
-        console.error('Failed to send Inngest event:', err instanceof Error ? err.message : err);
-      });
+    // Fire-and-forget: queue response handling via Inngest (if configured)
+    if (isInngestConfigured()) {
+      const { inngest } = await import('./inngest/client.js');
+      const composite = compositeEventType(
+        eventType,
+        payload as Record<string, unknown> & { action?: string },
+      );
+      const repoId = extractRepoId(
+        payload as Record<string, unknown> & { repository?: { full_name?: string } },
+      );
+      inngest
+        .send({
+          name: 'guardian/event.respond',
+          data: {
+            eventType: composite,
+            payload,
+            repoId,
+            rawEventId: result.rawEventId,
+            contributorId: result.contributorId,
+          },
+        })
+        .catch((err: unknown) => {
+          console.error('Failed to send Inngest event:', err instanceof Error ? err.message : err);
+        });
+    }
 
     return c.json(
       {

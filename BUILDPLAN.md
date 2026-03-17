@@ -68,9 +68,10 @@ PRs are ordered by dependency. Each PR is independently mergeable and testable.
 
 ---
 
-### PR 4: Extractor Agent
+### PR 4: Extractor Agent ✅
 
 **Branch:** `feature/guardian-extractor`
+**Status:** DELIVERED
 **Depends on:** PR 3
 **Scope:**
 - `guardian/src/agents/extractor.ts` — Core extraction logic
@@ -85,9 +86,10 @@ PRs are ordered by dependency. Each PR is independently mergeable and testable.
 
 ---
 
-### PR 5: Consolidator Agent
+### PR 5: Consolidator Agent ✅
 
 **Branch:** `feature/guardian-consolidator`
+**Status:** DELIVERED
 **Depends on:** PR 4
 **Scope:**
 - `guardian/src/agents/consolidator.ts` — Deduplication, merge, and linking logic
@@ -101,9 +103,10 @@ PRs are ordered by dependency. Each PR is independently mergeable and testable.
 
 ---
 
-### PR 6: Retriever Agent
+### PR 6: Retriever Agent ✅
 
 **Branch:** `feature/guardian-retriever`
+**Status:** DELIVERED
 **Depends on:** PR 5
 **Scope:**
 - `guardian/src/agents/retriever.ts` — Two-stage ranking (SQL candidates → app re-rank)
@@ -118,9 +121,10 @@ PRs are ordered by dependency. Each PR is independently mergeable and testable.
 
 ---
 
-### PR 7: Curator Agent
+### PR 7: Curator Agent ✅
 
 **Branch:** `feature/guardian-curator`
+**Status:** DELIVERED
 **Depends on:** PR 6
 **Scope:**
 - `guardian/src/agents/curator.ts` — Lifecycle management + contributor profiles

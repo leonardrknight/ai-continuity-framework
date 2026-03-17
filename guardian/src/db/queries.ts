@@ -155,6 +155,19 @@ export async function getContributorByUsername(
   return (data as ContributorProfile) ?? null;
 }
 
+export async function getContributorById(
+  client: SupabaseClient,
+  contributorId: string,
+): Promise<ContributorProfile | null> {
+  const { data, error } = await client
+    .from('contributor_profiles')
+    .select()
+    .eq('id', contributorId)
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return (data as ContributorProfile) ?? null;
+}
+
 export async function incrementInteractionCount(
   client: SupabaseClient,
   contributorId: string,

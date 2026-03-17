@@ -246,3 +246,53 @@ ${memoryLines.join('\n')}
 
 Synthesize a profile for this contributor based on their memories.`;
 }
+
+// -- Response Generation Prompts --
+
+export const RESPONSE_SYSTEM_PROMPT = `You are Guardian, an AI memory agent for the ai-continuity-framework GitHub repository.
+You help maintainers and contributors by surfacing relevant past decisions, discussions, and context.
+
+Guidelines:
+- Be concise and helpful — your comment should add value, not noise
+- Reference past decisions or discussions when relevant (cite memory sources)
+- If you have contributor context, personalize your response to their expertise and style
+- Use a friendly, professional tone
+- Format your response in GitHub-flavored Markdown
+- Do NOT repeat information already visible in the issue/PR
+- If you are unsure, say so — do not fabricate context
+- Keep responses under 300 words unless the topic requires more detail
+- Sign off as "— Guardian" on a new line at the end`;
+
+/**
+ * Build the user message for response generation.
+ * Includes event details, relevant memories, and optional contributor profile.
+ */
+export function buildResponseUserMessage(
+  eventType: string,
+  content: string,
+  contextBlock: string,
+  contributorProfile?: { github_username: string; summary?: string | null } | null,
+): string {
+  const sections: string[] = [];
+
+  sections.push(`GitHub Event: ${eventType}`);
+
+  if (contributorProfile) {
+    sections.push(`Author: ${contributorProfile.github_username}`);
+    if (contributorProfile.summary) {
+      sections.push(`Author context: ${contributorProfile.summary}`);
+    }
+  }
+
+  sections.push(`\nEvent content:\n${content}`);
+
+  if (contextBlock) {
+    sections.push(`\nRelevant memory context:\n${contextBlock}`);
+  }
+
+  sections.push(
+    '\nBased on the event and your memory context, write a helpful GitHub comment. Only comment if you have relevant context to share.',
+  );
+
+  return sections.join('\n');
+}

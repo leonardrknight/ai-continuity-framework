@@ -12,8 +12,13 @@ import { extractorCron } from './inngest/functions/extractor.js';
 import { consolidatorCron } from './inngest/functions/consolidator.js';
 import { curatorCron } from './inngest/functions/curator.js';
 import { responderHandler } from './inngest/functions/responder.js';
+import { chatRouter, conversationsRouter } from './chat/router.js';
 
 export const app = new Hono();
+
+// Chat API routes (authenticated)
+app.route('/api/chat', chatRouter);
+app.route('/api/conversations', conversationsRouter);
 
 // Inngest endpoint — serves all registered functions
 app.on(

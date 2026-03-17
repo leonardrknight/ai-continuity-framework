@@ -167,6 +167,7 @@ export async function runRetriever(
   client: SupabaseClient,
   query: string,
   repoId: string,
+  userId?: string,
   contributorId?: string,
 ): Promise<RetrievalResult> {
   const startTime = Date.now();
@@ -196,6 +197,7 @@ export async function runRetriever(
           query_embedding: embedding,
           query_text: query,
           filter_repo_id: repoId,
+          filter_user_id: userId,
           match_threshold: MATCH_THRESHOLD,
           match_count: CANDIDATE_COUNT,
         });
@@ -214,6 +216,7 @@ export async function runRetriever(
           query_embedding: Array.from({ length: 1536 }, () => 0),
           query_text: query,
           filter_repo_id: repoId,
+          filter_user_id: userId,
           match_threshold: MATCH_THRESHOLD,
           match_count: CANDIDATE_COUNT,
           semantic_weight: 0, // keyword only
@@ -238,6 +241,7 @@ export async function runRetriever(
         query_embedding: Array.from({ length: 1536 }, () => 0),
         query_text: query,
         filter_repo_id: repoId,
+        filter_user_id: userId,
         match_threshold: MATCH_THRESHOLD,
         match_count: CANDIDATE_COUNT,
         semantic_weight: 0,

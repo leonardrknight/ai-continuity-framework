@@ -70,8 +70,8 @@ export async function generateChatResponse(
   // Step 1: Get recent conversation history (before the current message)
   const history = await getMessagesByConversation(client, conversationId, MAX_HISTORY_MESSAGES);
 
-  // Step 2: Retrieve relevant memories
-  const retrieval = await runRetriever(client, userMessage, effectiveRepoId, undefined);
+  // Step 2: Retrieve relevant memories (filtered by userId for isolation)
+  const retrieval = await runRetriever(client, userMessage, effectiveRepoId, userId);
 
   // Step 3: Build system prompt
   const systemPrompt = buildChatSystemPrompt(retrieval.memories, null);

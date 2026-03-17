@@ -247,6 +247,53 @@ ${memoryLines.join('\n')}
 Synthesize a profile for this contributor based on their memories.`;
 }
 
+// -- Chat Prompts --
+
+export const CHAT_SYSTEM_PROMPT = `You are Guardian, an AI assistant with persistent memory. You remember everything users tell you across conversations. You manage the ai-continuity-framework repository and can discuss its methodology, architecture, and memory patterns. Be helpful, concise, and reference past conversations when relevant.
+
+When you have memory context, weave it naturally into your responses — don't list memories mechanically. If the user asks about something you have memories of, use them to give a more informed answer. If you don't have relevant context, just be helpful based on what the user says.
+
+Format your responses in Markdown when appropriate.`;
+
+/**
+ * Build a context block from retrieved memories and user profile
+ * for injection into the chat system prompt.
+ */
+export function buildChatContextBlock(
+  memories: { content: string; memory_type: string; topics: string[] | null }[],
+  userProfile?: {
+    display_name?: string | null;
+    summary?: string | null;
+    interests?: string[] | null;
+    communication_style?: string | null;
+  } | null,
+): string {
+  const sections: string[] = [];
+
+  if (userProfile) {
+    const profileLines: string[] = ['## User Context'];
+    if (userProfile.display_name) profileLines.push(`Name: ${userProfile.display_name}`);
+    if (userProfile.summary) profileLines.push(`Summary: ${userProfile.summary}`);
+    if (userProfile.interests?.length)
+      profileLines.push(`Interests: ${userProfile.interests.join(', ')}`);
+    if (userProfile.communication_style) {
+      profileLines.push(`Communication style: ${userProfile.communication_style}`);
+    }
+    sections.push(profileLines.join('\n'));
+  }
+
+  if (memories.length > 0) {
+    const memoryLines: string[] = ['## Relevant Memories'];
+    for (const mem of memories) {
+      const topicStr = mem.topics?.length ? ` [${mem.topics.join(', ')}]` : '';
+      memoryLines.push(`- (${mem.memory_type}${topicStr}) ${mem.content}`);
+    }
+    sections.push(memoryLines.join('\n'));
+  }
+
+  return sections.join('\n\n');
+}
+
 // -- Response Generation Prompts --
 
 export const RESPONSE_SYSTEM_PROMPT = `You are Guardian, an AI memory agent for the ai-continuity-framework GitHub repository.

@@ -15,7 +15,7 @@ import {
 } from '../db/queries.js';
 import type { RawEvent, ExtractedMemoryInsert } from '../db/schema.js';
 
-const EXTRACTION_MODEL = 'claude-haiku-4-5-20251001';
+const EXTRACTION_MODEL = 'claude-3-haiku-20240307';
 const MAX_LLM_RETRIES = 3;
 const BATCH_SIZE = 20;
 

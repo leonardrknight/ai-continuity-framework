@@ -6,7 +6,7 @@ import { getMessagesByConversation } from '../db/queries.js';
 import type { UserProfile, Message } from '../db/schema.js';
 
 /** Claude Sonnet model for chat responses. */
-const CHAT_MODEL = 'claude-sonnet-4-6-20250514';
+const CHAT_MODEL = 'claude-sonnet-4-20250514';
 
 /** Maximum conversation history messages to include in context. */
 const MAX_HISTORY_MESSAGES = 20;

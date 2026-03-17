@@ -1,11 +1,17 @@
 import { Hono } from 'hono';
 import { serve as serveInngest } from 'inngest/hono';
-import { verifySignature, processWebhookEvent } from './github/webhooks.js';
+import {
+  verifySignature,
+  processWebhookEvent,
+  compositeEventType,
+  extractRepoId,
+} from './github/webhooks.js';
 import { getSupabaseClient } from './db/client.js';
 import { inngest } from './inngest/client.js';
 import { extractorCron } from './inngest/functions/extractor.js';
 import { consolidatorCron } from './inngest/functions/consolidator.js';
 import { curatorCron } from './inngest/functions/curator.js';
+import { responderHandler } from './inngest/functions/responder.js';
 
 export const app = new Hono();
 
@@ -13,7 +19,10 @@ export const app = new Hono();
 app.on(
   ['GET', 'POST', 'PUT'],
   '/api/inngest',
-  serveInngest({ client: inngest, functions: [extractorCron, consolidatorCron, curatorCron] }),
+  serveInngest({
+    client: inngest,
+    functions: [extractorCron, consolidatorCron, curatorCron, responderHandler],
+  }),
 );
 
 // Health check
@@ -65,6 +74,31 @@ app.post('/api/webhooks/github', async (c) => {
   try {
     const client = getSupabaseClient();
     const result = await processWebhookEvent(client, eventType, deliveryId, payload);
+
+    // Fire-and-forget: queue response handling via Inngest
+    // Don't await — webhook must return 201 immediately
+    const composite = compositeEventType(
+      eventType,
+      payload as Record<string, unknown> & { action?: string },
+    );
+    const repoId = extractRepoId(
+      payload as Record<string, unknown> & { repository?: { full_name?: string } },
+    );
+    inngest
+      .send({
+        name: 'guardian/event.respond',
+        data: {
+          eventType: composite,
+          payload,
+          repoId,
+          rawEventId: result.rawEventId,
+          contributorId: result.contributorId,
+        },
+      })
+      .catch((err: unknown) => {
+        console.error('Failed to send Inngest event:', err instanceof Error ? err.message : err);
+      });
+
     return c.json(
       {
         status: 'captured',

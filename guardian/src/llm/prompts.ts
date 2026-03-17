@@ -126,3 +126,53 @@ Author: ${username}
 Content:
 ${contentText}`;
 }
+
+// -- Consolidation / Merge Prompts --
+
+/** Schema for the merged memory output from the LLM. */
+export interface MergedMemoryLLM {
+  merged_content: string;
+  topics: string[];
+}
+
+export const MERGE_SYSTEM_PROMPT = `You are a memory consolidation agent for the ai-continuity-framework project.
+Your job is to merge two semantically similar memories into a single, more comprehensive memory.
+
+Guidelines:
+- Combine the information from both memories into one clear, self-contained statement
+- Preserve all important details from both — do not drop facts
+- Resolve contradictions by keeping the more specific or recent information
+- Keep the merged content concise but complete
+- Return a unified set of topics that covers both memories
+- Topics should be lowercase, hyphenated (e.g., "memory-decay", "agent-architecture")`;
+
+export const MERGE_TOOL_SCHEMA: Anthropic.Tool = {
+  name: 'merge_memories',
+  description: 'Merge two similar memories into a single consolidated memory',
+  input_schema: {
+    type: 'object',
+    properties: {
+      merged_content: {
+        type: 'string',
+        description: 'The merged memory content — a clear, self-contained statement',
+      },
+      topics: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Unified lowercase hyphenated topic tags for the merged memory',
+      },
+    },
+    required: ['merged_content', 'topics'],
+  },
+};
+
+/** Build the user message for merging two memories. */
+export function buildMergeUserMessage(existingContent: string, newContent: string): string {
+  return `Existing memory:
+${existingContent}
+
+New memory:
+${newContent}
+
+Merge these two memories into a single, comprehensive memory.`;
+}

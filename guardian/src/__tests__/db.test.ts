@@ -60,8 +60,8 @@ describe('Schema types', () => {
   });
 
   it('AgentName accepts valid values', () => {
-    const agents: AgentName[] = ['extractor', 'consolidator', 'retriever', 'curator'];
-    expect(agents).toHaveLength(4);
+    const agents: AgentName[] = ['extractor', 'consolidator', 'retriever', 'curator', 'scribe'];
+    expect(agents).toHaveLength(5);
   });
 
   it('RawEvent has required fields', () => {
@@ -127,7 +127,8 @@ describe('Schema types', () => {
     };
     expect(profileInsert.github_username).toBe('testuser');
 
-    // ExtractedMemoryInsert requires source_event_id, repo_id, content, memory_type
+    // ExtractedMemoryInsert requires repo_id, content, memory_type
+    // source_event_id is now optional (conversation memories use source_message_id)
     const memoryInsert: ExtractedMemoryInsert = {
       source_event_id: 'uuid-here',
       repo_id: 'owner/repo',

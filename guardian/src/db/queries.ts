@@ -11,6 +11,12 @@ import type {
   AgentState,
   AgentStateUpsert,
   MatchMemoryResult,
+  UserProfile,
+  UserProfileInsert,
+  Conversation,
+  ConversationInsert,
+  Message,
+  MessageInsert,
 } from './schema.js';
 
 // -- Raw Events --
@@ -289,6 +295,145 @@ export async function updateContributorProfile(
   return data as ContributorProfile;
 }
 
+// -- User Profiles --
+
+export async function insertUserProfile(
+  client: SupabaseClient,
+  profile: UserProfileInsert,
+): Promise<UserProfile> {
+  const { data, error } = await client.from('user_profiles').insert(profile).select().single();
+  if (error) throw error;
+  return data as UserProfile;
+}
+
+export async function getUserProfileByAuthId(
+  client: SupabaseClient,
+  authId: string,
+): Promise<UserProfile | null> {
+  const { data, error } = await client
+    .from('user_profiles')
+    .select()
+    .eq('supabase_auth_id', authId)
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return (data as UserProfile) ?? null;
+}
+
+export async function getUserProfileById(
+  client: SupabaseClient,
+  id: string,
+): Promise<UserProfile | null> {
+  const { data, error } = await client.from('user_profiles').select().eq('id', id).single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return (data as UserProfile) ?? null;
+}
+
+// -- Conversations --
+
+export async function insertConversation(
+  client: SupabaseClient,
+  conversation: ConversationInsert,
+): Promise<Conversation> {
+  const { data, error } = await client.from('conversations').insert(conversation).select().single();
+  if (error) throw error;
+  return data as Conversation;
+}
+
+export async function getConversationsByUser(
+  client: SupabaseClient,
+  userId: string,
+  limit = 20,
+): Promise<Conversation[]> {
+  const { data, error } = await client
+    .from('conversations')
+    .select()
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as Conversation[];
+}
+
+export async function getConversationById(
+  client: SupabaseClient,
+  id: string,
+): Promise<Conversation | null> {
+  const { data, error } = await client.from('conversations').select().eq('id', id).single();
+  if (error && error.code !== 'PGRST116') throw error;
+  return (data as Conversation) ?? null;
+}
+
+// -- Messages --
+
+export async function insertMessage(
+  client: SupabaseClient,
+  message: MessageInsert,
+): Promise<Message> {
+  const { data, error } = await client.from('messages').insert(message).select().single();
+  if (error) throw error;
+  return data as Message;
+}
+
+export async function getMessagesByConversation(
+  client: SupabaseClient,
+  conversationId: string,
+  limit = 50,
+): Promise<Message[]> {
+  const { data, error } = await client
+    .from('messages')
+    .select()
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: true })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as Message[];
+}
+
+export async function getUnprocessedMessages(
+  client: SupabaseClient,
+  limit = 20,
+): Promise<Message[]> {
+  const { data, error } = await client
+    .from('messages')
+    .select()
+    .eq('processed', false)
+    .order('created_at', { ascending: true })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as Message[];
+}
+
+export async function markMessageProcessed(
+  client: SupabaseClient,
+  messageId: string,
+): Promise<void> {
+  const { error } = await client
+    .from('messages')
+    .update({ processed: true, processed_at: new Date().toISOString() })
+    .eq('id', messageId);
+  if (error) throw error;
+}
+
+export async function updateConversationMessageCount(
+  client: SupabaseClient,
+  conversationId: string,
+): Promise<void> {
+  // Count messages in conversation and update the count
+  const { count, error: countError } = await client
+    .from('messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('conversation_id', conversationId);
+  if (countError) throw countError;
+  const { error } = await client
+    .from('conversations')
+    .update({
+      message_count: count ?? 0,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', conversationId);
+  if (error) throw error;
+}
+
 // -- Functions (RPC wrappers) --
 
 export async function matchMemories(
@@ -297,6 +442,7 @@ export async function matchMemories(
     query_embedding: number[];
     query_text: string;
     filter_repo_id: string;
+    filter_user_id?: string;
     match_threshold?: number;
     match_count?: number;
     semantic_weight?: number;
@@ -306,6 +452,7 @@ export async function matchMemories(
     query_embedding: params.query_embedding,
     query_text: params.query_text,
     filter_repo_id: params.filter_repo_id,
+    filter_user_id: params.filter_user_id ?? null,
     match_threshold: params.match_threshold ?? 0.5,
     match_count: params.match_count ?? 10,
     semantic_weight: params.semantic_weight ?? 0.6,

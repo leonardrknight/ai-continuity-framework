@@ -113,6 +113,20 @@ export async function updateConsolidatedMemory(
   return data as ConsolidatedMemory;
 }
 
+export async function getConsolidatedMemoriesWithEmbeddings(
+  client: SupabaseClient,
+  repoId: string,
+): Promise<ConsolidatedMemory[]> {
+  const { data, error } = await client
+    .from('consolidated_memories')
+    .select()
+    .eq('repo_id', repoId)
+    .not('content_embedding', 'is', null)
+    .order('updated_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as ConsolidatedMemory[];
+}
+
 // -- Contributor Profiles --
 
 export async function upsertContributorProfile(

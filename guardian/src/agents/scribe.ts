@@ -16,7 +16,7 @@ import {
 } from '../db/queries.js';
 import type { Message, ExtractedMemoryInsert } from '../db/schema.js';
 
-const EXTRACTION_MODEL = 'claude-haiku-4-5-20251001';
+const EXTRACTION_MODEL = 'claude-haiku-4-20250514';
 const MAX_LLM_RETRIES = 3;
 const BATCH_SIZE = 30;
 const CONTEXT_WINDOW = 10;

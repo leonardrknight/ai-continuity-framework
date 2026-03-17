@@ -20,7 +20,7 @@ import type {
   ConsolidatedMemoryInsert,
 } from '../db/schema.js';
 
-const CONSOLIDATION_MODEL = 'claude-sonnet-4-6-20250514';
+const CONSOLIDATION_MODEL = 'claude-sonnet-4-20250514';
 const MAX_LLM_RETRIES = 3;
 const BATCH_SIZE = 50;
 const DUPLICATE_THRESHOLD = 0.92;

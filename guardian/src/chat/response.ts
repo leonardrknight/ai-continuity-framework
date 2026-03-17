@@ -3,10 +3,11 @@ import { getAnthropicClient } from '../llm/client.js';
 import { CHAT_SYSTEM_PROMPT, buildChatContextBlock } from '../llm/prompts.js';
 import { runRetriever } from '../agents/retriever.js';
 import { getMessagesByConversation } from '../db/queries.js';
+import { loadConfig } from '../config.js';
 import type { UserProfile, Message } from '../db/schema.js';
 
 /** Claude Sonnet model for chat responses. */
-const CHAT_MODEL = 'claude-sonnet-4-6-20250514';
+const CHAT_MODEL = 'claude-sonnet-4-20250514';
 
 /** Maximum conversation history messages to include in context. */
 const MAX_HISTORY_MESSAGES = 20;
@@ -14,8 +15,8 @@ const MAX_HISTORY_MESSAGES = 20;
 /** Maximum tokens for chat response. */
 const MAX_TOKENS = 1024;
 
-/** Default repo ID for memory retrieval. */
-const DEFAULT_REPO_ID = 'leonardrknight/ai-continuity-framework';
+/** Get repo ID from config. */
+const getRepoId = (): string => loadConfig().GUARDIAN_REPO;
 
 /**
  * Build the full system prompt with memory context injected.
@@ -64,7 +65,7 @@ export async function generateChatResponse(
   userId: string,
   repoId?: string,
 ): Promise<{ text: string; memoriesUsed: number }> {
-  const effectiveRepoId = repoId ?? DEFAULT_REPO_ID;
+  const effectiveRepoId = repoId ?? getRepoId();
 
   // Step 1: Get recent conversation history (before the current message)
   const history = await getMessagesByConversation(client, conversationId, MAX_HISTORY_MESSAGES);

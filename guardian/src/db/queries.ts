@@ -223,6 +223,72 @@ export async function getAgentState(
   return (data as AgentState) ?? null;
 }
 
+// -- Curator Queries --
+
+export async function getConsolidatedMemoriesForCuration(
+  client: SupabaseClient,
+  repoId: string,
+  limit = 100,
+): Promise<ConsolidatedMemory[]> {
+  // Fetch consolidated memories not curated in 7+ days.
+  // Uses updated_at as a proxy for last curated — memories curated recently
+  // will have a fresh updated_at timestamp.
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await client
+    .from('consolidated_memories')
+    .select()
+    .eq('repo_id', repoId)
+    .lt('updated_at', sevenDaysAgo)
+    .order('updated_at', { ascending: true })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as ConsolidatedMemory[];
+}
+
+export async function getContributorsWithRecentActivity(
+  client: SupabaseClient,
+  days = 30,
+): Promise<ContributorProfile[]> {
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await client
+    .from('contributor_profiles')
+    .select()
+    .gte('last_seen_at', cutoff)
+    .order('last_seen_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as ContributorProfile[];
+}
+
+export async function getMemoriesForContributor(
+  client: SupabaseClient,
+  contributorId: string,
+  limit = 50,
+): Promise<ConsolidatedMemory[]> {
+  const { data, error } = await client
+    .from('consolidated_memories')
+    .select()
+    .eq('contributor_id', contributorId)
+    .order('updated_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as ConsolidatedMemory[];
+}
+
+export async function updateContributorProfile(
+  client: SupabaseClient,
+  id: string,
+  updates: Partial<ContributorProfile>,
+): Promise<ContributorProfile> {
+  const { data, error } = await client
+    .from('contributor_profiles')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as ContributorProfile;
+}
+
 // -- Functions (RPC wrappers) --
 
 export async function matchMemories(

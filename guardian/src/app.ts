@@ -5,6 +5,7 @@ import { getSupabaseClient } from './db/client.js';
 import { inngest } from './inngest/client.js';
 import { extractorCron } from './inngest/functions/extractor.js';
 import { consolidatorCron } from './inngest/functions/consolidator.js';
+import { curatorCron } from './inngest/functions/curator.js';
 
 export const app = new Hono();
 
@@ -12,7 +13,7 @@ export const app = new Hono();
 app.on(
   ['GET', 'POST', 'PUT'],
   '/api/inngest',
-  serveInngest({ client: inngest, functions: [extractorCron, consolidatorCron] }),
+  serveInngest({ client: inngest, functions: [extractorCron, consolidatorCron, curatorCron] }),
 );
 
 // Health check

@@ -98,6 +98,9 @@ vi.mock('../db/queries.js', () => ({
     mockState.agentStateUpserts.push(state);
     return state;
   }),
+  getAgentState: vi.fn(async () => null),
+  getThreadsForConversation: vi.fn(async () => []),
+  saveThreads: vi.fn(async () => {}),
 }));
 
 // Import after mocks

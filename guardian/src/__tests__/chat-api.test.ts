@@ -164,6 +164,9 @@ vi.mock('../db/queries.js', () => ({
   getContributorById: vi.fn(async () => null),
   getUserProfileByAuthId: vi.fn(async () => mockState.userProfile),
   insertUserProfile: vi.fn(async () => mockState.userProfile),
+  getAgentState: vi.fn(async () => null),
+  getThreadsForConversation: vi.fn(async () => []),
+  saveThreads: vi.fn(async () => {}),
 }));
 
 // -- Mock retriever --

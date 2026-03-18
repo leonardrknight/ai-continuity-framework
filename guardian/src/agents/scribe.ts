@@ -13,7 +13,10 @@ import {
   markMessageProcessed,
   insertExtractedMemory,
   upsertAgentState,
+  getThreadsForConversation,
+  saveThreads,
 } from '../db/queries.js';
+import { ThreadTracker } from './thread-tracker.js';
 import type { Message, ExtractedMemoryInsert } from '../db/schema.js';
 
 const EXTRACTION_MODEL = 'claude-3-haiku-20240307';
@@ -182,6 +185,48 @@ export async function runScribe(client: SupabaseClient, repoId: string): Promise
       );
 
       result.memoriesCreated += created;
+
+      // Update thread state from the batch messages
+      try {
+        const existingThreads = await getThreadsForConversation(client, conversationId);
+        const tracker = new ThreadTracker(
+          conversationId,
+          batchMessages[0]?.user_id ?? 'unknown',
+          existingThreads,
+        );
+
+        const userMessages = batchMessages.filter((m) => m.role === 'user');
+        const historyTexts = recentMessages.filter((m) => m.role === 'user').map((m) => m.content);
+
+        for (const msg of userMessages) {
+          const action = tracker.detectThread(msg.content, historyTexts);
+          switch (action.type) {
+            case 'new':
+              tracker.startThread(action.topic);
+              break;
+            case 'resume':
+              tracker.resumeThread(action.threadId);
+              break;
+            case 'complete':
+              tracker.completeThread(action.threadId);
+              break;
+            case 'continue':
+              tracker.updateThread(action.threadId, msg.content);
+              break;
+            case 'none':
+              break;
+          }
+          historyTexts.push(msg.content);
+        }
+
+        await saveThreads(client, conversationId, tracker.getThreads());
+      } catch (threadError) {
+        // Thread tracking is non-critical — log but don't fail the batch
+        console.error(
+          `Scribe thread tracking failed for ${conversationId}:`,
+          threadError instanceof Error ? threadError.message : threadError,
+        );
+      }
 
       // Mark all batch messages as processed
       for (const msg of batchMessages) {

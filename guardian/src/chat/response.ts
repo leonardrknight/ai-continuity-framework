@@ -2,6 +2,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getAnthropicClient } from '../llm/client.js';
 import { CHAT_SYSTEM_PROMPT, buildChatContextBlock } from '../llm/prompts.js';
 import { runRetriever } from '../agents/retriever.js';
+import {
+  runAnticipator,
+  mergeWithRetrieval,
+  getStagedPredictions,
+  clearStagedPredictions,
+} from '../agents/anticipator.js';
 import { ContextWindowManager } from '../agents/context-monitor.js';
 import { getMessagesByConversation } from '../db/queries.js';
 import { loadConfig } from '../config.js';
@@ -74,11 +80,34 @@ export async function generateChatResponse(
   // Step 1: Get recent conversation history (before the current message)
   const history = await getMessagesByConversation(client, conversationId, MAX_HISTORY_MESSAGES);
 
+  // Step 1.5: Run Anticipator — predict relevant memories before explicit retrieval
+  const conversationTexts = history
+    .filter((m) => m.role === 'user' || m.role === 'assistant')
+    .map((m) => m.content);
+  const anticipation = await runAnticipator(
+    client,
+    userMessage,
+    userId,
+    effectiveRepoId,
+    conversationTexts,
+  );
+
+  // Check for staged predictions from previous turn
+  const staged = getStagedPredictions(userId);
+  const stagedMemories = staged.flatMap((p) => p.memories);
+  if (staged.length > 0) {
+    clearStagedPredictions(userId);
+  }
+
   // Step 2: Retrieve relevant memories (filtered by userId for isolation)
   const retrieval = await runRetriever(client, userMessage, effectiveRepoId, userId);
 
+  // Step 2.5: Merge retriever results with anticipated + staged memories (deduplicate)
+  const allAnticipated = [...anticipation.immediateMemories, ...stagedMemories];
+  const mergedMemories = mergeWithRetrieval(retrieval.memories, allAnticipated);
+
   // Step 3: Build system prompt
-  const systemPrompt = buildChatSystemPrompt(retrieval.memories, null);
+  const systemPrompt = buildChatSystemPrompt(mergedMemories, null);
 
   // Step 4: Build messages array (history + current message)
   const conversationMessages = formatConversationHistory(history);
@@ -111,7 +140,7 @@ export async function generateChatResponse(
 
   return {
     text,
-    memoriesUsed: retrieval.memories.length,
+    memoriesUsed: mergedMemories.length,
   };
 }
 

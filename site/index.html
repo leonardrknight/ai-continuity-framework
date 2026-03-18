@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Engram — Memory Infrastructure for AI Agents</title>
+  <meta name="description" content="Open-source framework for giving AI agents unlimited, persistent memory. Never forget a conversation. Never lose context. Never start over.">
+  <meta property="og:title" content="AI Engram — Memory Infrastructure for AI Agents">
+  <meta property="og:description" content="Open-source framework for giving AI agents unlimited, persistent memory.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ai-engram.org">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Particle canvas -->
+  <canvas id="neurons"></canvas>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <a href="/" class="nav-brand">
+      <span class="nav-logo">◇</span>
+      <span class="nav-name">AI Engram</span>
+    </a>
+    <div class="nav-links">
+      <a href="#how-it-works">How It Works</a>
+      <a href="#architecture">Architecture</a>
+      <a href="https://github.com/leonardrknight/ai-continuity-framework" target="_blank">GitHub</a>
+      <a href="https://guardian.ai-engram.org" class="nav-cta" target="_blank">Try Guardian</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">Open Source · MIT License</div>
+      <h1 class="hero-title">
+        <span class="hero-line">AI that</span>
+        <span class="hero-line hero-accent"><em>never</em> forgets.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Memory infrastructure for AI agents. Every conversation remembered.
+        Every preference learned. Every relationship preserved — permanently.
+      </p>
+      <div class="hero-actions">
+        <a href="https://guardian.ai-engram.org" class="btn btn-primary" target="_blank">
+          Talk to Guardian
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="https://github.com/leonardrknight/ai-continuity-framework" class="btn btn-ghost" target="_blank">
+          View on GitHub
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-value">208</span>
+          <span class="stat-label">Tests Passing</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-value">5</span>
+          <span class="stat-label">Memory Agents</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-value">&lt;500ms</span>
+          <span class="stat-label">Recall Latency</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem -->
+  <section class="problem">
+    <div class="container">
+      <div class="problem-grid">
+        <div class="problem-text">
+          <h2 class="section-label">The Problem</h2>
+          <h3 class="problem-title">Every AI session starts from zero.</h3>
+          <p class="problem-body">
+            Your AI assistant forgets you exist between conversations. Context compaction
+            destroys mid-session reasoning. Platform memory is shallow — transcripts,
+            not understanding. Hardware migrations mean starting over.
+          </p>
+          <p class="problem-body">
+            AI Engram fixes this. Not with bigger context windows.
+            With <strong>memory architecture</strong>.
+          </p>
+        </div>
+        <div class="problem-visual">
+          <div class="amnesia-demo">
+            <div class="amnesia-msg amnesia-user">I'm Leo, CTO of Knight Ventures. We're building an AI memory framework.</div>
+            <div class="amnesia-msg amnesia-ai">Nice to meet you! How can I help?</div>
+            <div class="amnesia-divider">
+              <span>— session ends —</span>
+            </div>
+            <div class="amnesia-msg amnesia-user">What do you know about my company?</div>
+            <div class="amnesia-msg amnesia-ai amnesia-fail">I don't have any information about your company. Could you tell me more?</div>
+          </div>
+          <div class="amnesia-label">This is what AI without memory looks like.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <h2 class="section-label">How It Works</h2>
+      <h3 class="section-title">Five agents. One memory.</h3>
+      <p class="section-subtitle">
+        A swarm of specialized background agents captures, extracts, consolidates,
+        curates, and retrieves memories — so the AI you're talking to just <em>knows</em>.
+      </p>
+
+      <div class="pipeline">
+        <div class="pipeline-stage" style="--delay: 0">
+          <div class="stage-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v18m-6-6l6 6 6-6"/></svg>
+          </div>
+          <div class="stage-content">
+            <h4>Capture</h4>
+            <p>Every message stored verbatim. Zero data loss. The firehose.</p>
+          </div>
+          <div class="stage-agent">Scribe Agent</div>
+          <div class="stage-cadence">Every 2 min</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-stage" style="--delay: 1">
+          <div class="stage-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <div class="stage-content">
+            <h4>Extract</h4>
+            <p>LLM distills facts, decisions, preferences, relationships from raw conversation.</p>
+          </div>
+          <div class="stage-agent">Extractor Agent</div>
+          <div class="stage-cadence">Every 5 min</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-stage" style="--delay: 2">
+          <div class="stage-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+          </div>
+          <div class="stage-content">
+            <h4>Consolidate</h4>
+            <p>Deduplicate. Merge related memories. Link cross-references. Keep it clean.</p>
+          </div>
+          <div class="stage-agent">Consolidator Agent</div>
+          <div class="stage-cadence">Hourly</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-stage" style="--delay: 3">
+          <div class="stage-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div class="stage-content">
+            <h4>Curate</h4>
+            <p>Score importance. Manage tiers. Build personality profiles. Archive gracefully.</p>
+          </div>
+          <div class="stage-agent">Curator Agent</div>
+          <div class="stage-cadence">Daily</div>
+        </div>
+
+        <div class="pipeline-connector"></div>
+
+        <div class="pipeline-stage" style="--delay: 4">
+          <div class="stage-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <div class="stage-content">
+            <h4>Retrieve</h4>
+            <p>Semantic + keyword hybrid search. Two-stage ranking. Sub-500ms recall.</p>
+          </div>
+          <div class="stage-agent">Retriever Agent</div>
+          <div class="stage-cadence">On demand</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section class="architecture" id="architecture">
+    <div class="container">
+      <h2 class="section-label">Architecture</h2>
+      <h3 class="section-title">One brain. Multiple interfaces.</h3>
+      <p class="section-subtitle">
+        Guardian is hub-and-spoke — one memory pipeline serving any number of channels.
+        Chat UI, API, AI agents, GitHub — they all feed the same brain.
+      </p>
+
+      <div class="arch-grid">
+        <div class="arch-card">
+          <div class="arch-card-icon">💬</div>
+          <h4>Chat Interface</h4>
+          <p>Web UI where you talk to Guardian. Sign up, chat, experience memory that works.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">🔌</div>
+          <h4>REST API</h4>
+          <p>Point any AI agent at the API. Instant unlimited memory via <code>POST /api/chat</code>.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">🤖</div>
+          <h4>Agent Memory</h4>
+          <p>OpenClaw, Claude Code, custom agents — connect to Guardian and never forget.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">🔐</div>
+          <h4>Per-User Isolation</h4>
+          <p>RLS at the database level. Each user's memories are completely private.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">📊</div>
+          <h4>Personality Profiles</h4>
+          <p>Guardian builds a profile of each user — interests, communication style, expertise.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">📖</div>
+          <h4>Open Source</h4>
+          <p>MIT licensed. Clone it, deploy it, build on it. 7 research iterations and 40+ papers behind it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Try It -->
+  <section class="try-it">
+    <div class="container">
+      <div class="try-content">
+        <h2 class="try-title">Talk to Guardian.</h2>
+        <p class="try-subtitle">
+          Tell it about yourself. Come back tomorrow. It'll remember everything.
+        </p>
+        <a href="https://guardian.ai-engram.org" class="btn btn-primary btn-large" target="_blank">
+          Open Guardian
+          <span class="btn-arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section class="tech-stack">
+    <div class="container">
+      <h2 class="section-label">Built With</h2>
+      <div class="stack-row">
+        <div class="stack-item">
+          <span class="stack-name">TypeScript</span>
+        </div>
+        <div class="stack-item">
+          <span class="stack-name">Hono</span>
+        </div>
+        <div class="stack-item">
+          <span class="stack-name">Supabase</span>
+        </div>
+        <div class="stack-item">
+          <span class="stack-name">pgvector</span>
+        </div>
+        <div class="stack-item">
+          <span class="stack-name">Claude API</span>
+        </div>
+        <div class="stack-item">
+          <span class="stack-name">Inngest</span>
+        </div>
+        <div class="stack-item">
+          <span class="stack-name">OpenAI Embeddings</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <span class="nav-logo">◇</span>
+          <span class="nav-name">AI Engram</span>
+          <p class="footer-tagline">Memory infrastructure for AI agents.</p>
+        </div>
+        <div class="footer-links">
+          <h5>Project</h5>
+          <a href="https://github.com/leonardrknight/ai-continuity-framework" target="_blank">GitHub</a>
+          <a href="https://github.com/leonardrknight/ai-continuity-framework/tree/main/guardian" target="_blank">Guardian Source</a>
+          <a href="https://github.com/leonardrknight/ai-continuity-framework/tree/main/research" target="_blank">Research Papers</a>
+        </div>
+        <div class="footer-links">
+          <h5>Resources</h5>
+          <a href="https://guardian.ai-engram.org" target="_blank">Try Guardian</a>
+          <a href="https://github.com/leonardrknight/ai-continuity-framework/blob/main/guardian/README.md" target="_blank">Documentation</a>
+          <a href="https://github.com/leonardrknight/ai-continuity-framework/issues" target="_blank">Issues</a>
+        </div>
+        <div class="footer-links">
+          <h5>By</h5>
+          <a href="https://knightventures.com" target="_blank">Knight Ventures, Inc.</a>
+          <a href="https://miamigos.ai" target="_blank">Mi Amigos AI</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Knight Ventures, Inc. MIT License.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

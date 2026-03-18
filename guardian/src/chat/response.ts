@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getAnthropicClient } from '../llm/client.js';
 import { CHAT_SYSTEM_PROMPT, buildChatContextBlock } from '../llm/prompts.js';
 import { runRetriever } from '../agents/retriever.js';
+import { ContextWindowManager } from '../agents/context-monitor.js';
 import { getMessagesByConversation } from '../db/queries.js';
 import { loadConfig } from '../config.js';
 import type { UserProfile, Message } from '../db/schema.js';
@@ -14,6 +15,9 @@ const MAX_HISTORY_MESSAGES = 20;
 
 /** Maximum tokens for chat response. */
 const MAX_TOKENS = 1024;
+
+/** Context window manager for intelligent paging. */
+const contextManager = new ContextWindowManager();
 
 /** Get repo ID from config. */
 const getRepoId = (): string => loadConfig().GUARDIAN_REPO;
@@ -80,13 +84,25 @@ export async function generateChatResponse(
   const conversationMessages = formatConversationHistory(history);
   conversationMessages.push({ role: 'user', content: userMessage });
 
+  // Step 4.5: Manage context window budget — page out low-value messages if needed
+  const budgetResult = await contextManager.manage(
+    client,
+    conversationMessages,
+    userId,
+    effectiveRepoId,
+  );
+  const managedMessages = budgetResult.messages.filter(
+    (m): m is { role: 'user' | 'assistant'; content: string } =>
+      m.role === 'user' || m.role === 'assistant',
+  );
+
   // Step 5: Call Claude
   const anthropic = getAnthropicClient();
   const response = await anthropic.messages.create({
     model: CHAT_MODEL,
     max_tokens: MAX_TOKENS,
     system: systemPrompt,
-    messages: conversationMessages,
+    messages: managedMessages,
   });
 
   // Extract text from response

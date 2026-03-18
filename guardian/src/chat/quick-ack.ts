@@ -1,6 +1,6 @@
 /**
  * Quick-ack pattern for conversational flow.
- * 
+ *
  * When users are sharing/dumping information, respond with quick acknowledgments
  * instead of waiting for full LLM response. This keeps the conversation flowing
  * while background agents process the content.
@@ -9,19 +9,19 @@
 /** Pool of quick acknowledgment responses for when user is sharing */
 const SHARING_ACKS = [
   "I'm listening...",
-  "Uh-huh, go on.",
-  "Interesting, tell me more.",
-  "Got it.",
-  "I see.",
-  "Okay.",
-  "Right.",
-  "Mm-hmm.",
-  "That makes sense.",
-  "I understand.",
-  "Continue...",
-  "Yes, and?",
-  "Oh really?",
-  "Noted.",
+  'Uh-huh, go on.',
+  'Interesting, tell me more.',
+  'Got it.',
+  'I see.',
+  'Okay.',
+  'Right.',
+  'Mm-hmm.',
+  'That makes sense.',
+  'I understand.',
+  'Continue...',
+  'Yes, and?',
+  'Oh really?',
+  'Noted.',
   "I'm following.",
 ];
 
@@ -29,7 +29,7 @@ const SHARING_ACKS = [
 const QUESTION_INDICATORS = [
   '?',
   'what do you think',
-  'what\'s your',
+  "what's your",
   'what are your',
   'do you think',
   'can you',
@@ -58,11 +58,11 @@ const SHARING_INDICATORS = [
   'i want to tell you',
   'so basically',
   'the thing is',
-  'here\'s the deal',
+  "here's the deal",
   'so we',
   'we started',
-  'we\'ve been',
-  'i\'ve been',
+  "we've been",
+  "i've been",
   'the background is',
   'for context',
   'just so you know',
@@ -80,37 +80,37 @@ const SHARING_INDICATORS = [
 
 /**
  * Detect if a message is primarily "sharing" information vs "asking" a question.
- * 
+ *
  * @param message - The user's message
  * @returns 'sharing' | 'asking' | 'unclear'
  */
 export function detectMessageIntent(message: string): 'sharing' | 'asking' | 'unclear' {
   const lower = message.toLowerCase().trim();
-  
+
   // Check for question indicators first (they're more specific)
   for (const indicator of QUESTION_INDICATORS) {
     if (lower.includes(indicator)) {
       return 'asking';
     }
   }
-  
+
   // Check for sharing indicators
   for (const indicator of SHARING_INDICATORS) {
     if (lower.includes(indicator)) {
       return 'sharing';
     }
   }
-  
+
   // If message is long (>100 chars) and doesn't end with ?, likely sharing
   if (message.length > 100 && !lower.endsWith('?')) {
     return 'sharing';
   }
-  
+
   // Short messages without clear intent - default to asking (give full response)
   if (message.length < 50) {
     return 'asking';
   }
-  
+
   // Medium length, no clear signals - unclear, but lean toward sharing
   return 'sharing';
 }
@@ -119,25 +119,25 @@ export function detectMessageIntent(message: string): 'sharing' | 'asking' | 'un
  * Get a random quick acknowledgment response.
  * Tracks recent responses to avoid repetition.
  */
-let recentAcks: string[] = [];
+const recentAcks: string[] = [];
 const MAX_RECENT = 5;
 
 export function getQuickAck(): string {
   // Filter out recently used acks
-  const available = SHARING_ACKS.filter(ack => !recentAcks.includes(ack));
-  
+  const available = SHARING_ACKS.filter((ack) => !recentAcks.includes(ack));
+
   // If we've used them all, reset
   const pool = available.length > 0 ? available : SHARING_ACKS;
-  
+
   // Pick random
   const ack = pool[Math.floor(Math.random() * pool.length)];
-  
+
   // Track it
   recentAcks.push(ack);
   if (recentAcks.length > MAX_RECENT) {
     recentAcks.shift();
   }
-  
+
   return ack;
 }
 

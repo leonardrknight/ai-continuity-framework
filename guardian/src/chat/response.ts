@@ -9,7 +9,12 @@ import {
   clearStagedPredictions,
 } from '../agents/anticipator.js';
 import { ContextWindowManager } from '../agents/context-monitor.js';
-import { getMessagesByConversation } from '../db/queries.js';
+import { ThreadTracker } from '../agents/thread-tracker.js';
+import {
+  getMessagesByConversation,
+  getThreadsForConversation,
+  saveThreads,
+} from '../db/queries.js';
 import { loadConfig } from '../config.js';
 import type { UserProfile, Message } from '../db/schema.js';
 
@@ -29,19 +34,30 @@ const contextManager = new ContextWindowManager();
 const getRepoId = (): string => loadConfig().GUARDIAN_REPO;
 
 /**
- * Build the full system prompt with memory context injected.
+ * Build the full system prompt with memory context and thread context injected.
  */
 export function buildChatSystemPrompt(
   memories: { content: string; memory_type: string; topics: string[] | null }[],
   userProfile?: UserProfile | null,
+  threadContext?: string,
 ): string {
   const contextBlock = buildChatContextBlock(memories, userProfile);
 
-  if (!contextBlock) {
+  const sections: string[] = [];
+
+  if (contextBlock) {
+    sections.push(`--- Memory Context ---\n${contextBlock}`);
+  }
+
+  if (threadContext) {
+    sections.push(`--- Active Threads ---\n${threadContext}`);
+  }
+
+  if (sections.length === 0) {
     return CHAT_SYSTEM_PROMPT;
   }
 
-  return `${CHAT_SYSTEM_PROMPT}\n\n--- Memory Context ---\n${contextBlock}`;
+  return `${CHAT_SYSTEM_PROMPT}\n\n${sections.join('\n\n')}`;
 }
 
 /**
@@ -80,6 +96,47 @@ export async function generateChatResponse(
   // Step 1: Get recent conversation history (before the current message)
   const history = await getMessagesByConversation(client, conversationId, MAX_HISTORY_MESSAGES);
 
+  // Step 1.2: Load thread state for this conversation
+  let threadContext = '';
+  try {
+    const existingThreads = await getThreadsForConversation(client, conversationId);
+    const tracker = new ThreadTracker(conversationId, userId, existingThreads);
+
+    const conversationTextsForThreads = history
+      .filter((m) => m.role === 'user')
+      .map((m) => m.content);
+    const action = tracker.detectThread(userMessage, conversationTextsForThreads);
+
+    // Apply thread action
+    switch (action.type) {
+      case 'new':
+        tracker.startThread(action.topic);
+        break;
+      case 'resume':
+        tracker.resumeThread(action.threadId);
+        break;
+      case 'complete':
+        tracker.completeThread(action.threadId);
+        break;
+      case 'continue':
+        tracker.updateThread(action.threadId, userMessage);
+        break;
+      case 'none':
+        break;
+    }
+
+    // Build thread context for system prompt
+    threadContext = tracker.buildThreadContext();
+
+    // Persist updated threads (fire-and-forget to avoid blocking response)
+    saveThreads(client, conversationId, tracker.getThreads()).catch((err) =>
+      console.error('Failed to save threads:', err instanceof Error ? err.message : err),
+    );
+  } catch (err) {
+    // Thread tracking is non-critical — don't let it block the response
+    console.error('Thread tracking error:', err instanceof Error ? err.message : err);
+  }
+
   // Step 1.5: Run Anticipator — predict relevant memories before explicit retrieval
   const conversationTexts = history
     .filter((m) => m.role === 'user' || m.role === 'assistant')
@@ -106,8 +163,8 @@ export async function generateChatResponse(
   const allAnticipated = [...anticipation.immediateMemories, ...stagedMemories];
   const mergedMemories = mergeWithRetrieval(retrieval.memories, allAnticipated);
 
-  // Step 3: Build system prompt
-  const systemPrompt = buildChatSystemPrompt(mergedMemories, null);
+  // Step 3: Build system prompt (now includes thread context)
+  const systemPrompt = buildChatSystemPrompt(mergedMemories, null, threadContext || undefined);
 
   // Step 4: Build messages array (history + current message)
   const conversationMessages = formatConversationHistory(history);

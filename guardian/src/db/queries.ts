@@ -470,3 +470,41 @@ export async function recordMemoryAccess(
   });
   if (error) throw error;
 }
+
+// -- Thread Persistence --
+// Threads are stored as JSON in the agent_state metadata, keyed by conversation ID.
+// This avoids a new database table while keeping thread state persistent.
+
+import type { ConversationThread } from '../agents/thread-tracker.js';
+
+/**
+ * Load threads for a conversation from agent_state metadata.
+ */
+export async function getThreadsForConversation(
+  client: SupabaseClient,
+  conversationId: string,
+): Promise<ConversationThread[]> {
+  const state = await getAgentState(client, 'scribe', conversationId);
+  if (!state?.metadata) return [];
+  const threads = (state.metadata as Record<string, unknown>).threads;
+  if (!Array.isArray(threads)) return [];
+  return threads as ConversationThread[];
+}
+
+/**
+ * Save threads for a conversation into agent_state metadata.
+ */
+export async function saveThreads(
+  client: SupabaseClient,
+  conversationId: string,
+  threads: ConversationThread[],
+): Promise<void> {
+  const state = await getAgentState(client, 'scribe', conversationId);
+  const existingMetadata = (state?.metadata ?? {}) as Record<string, unknown>;
+
+  await upsertAgentState(client, {
+    agent_name: 'scribe',
+    repo_id: conversationId,
+    metadata: { ...existingMetadata, threads },
+  });
+}

@@ -1,0 +1,14 @@
+slug: "2026-03-18-guardian-memory-api"
+branch: ""
+pr: ""
+status: "active"
+approved: false
+source: "Leo + Claude conversation, informed by Amigo's live Guardian usage (2026-03-18)"
+target: "@F (Frame) → @O (Orchestrate)"
+notes: >
+  Design packet for Guardian's Memory API — a dedicated store/retrieve interface
+  for AI agents (OpenClaw, Clawdbot, Claude Code). Enables any AI agent to use
+  Guardian as its unlimited memory backend without going through the chat UI.
+  Includes API design, integration patterns, auth model, SDK concept, and
+  OpenClaw hook integration. Born from Amigo's real-world usage of Guardian
+  as its own memory system.

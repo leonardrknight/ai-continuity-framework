@@ -1,0 +1,19 @@
+{
+  "name": "@clawdbot/memory-guardian",
+  "version": "0.1.0",
+  "description": "Guardian-powered memory with three-plane knowledge boundaries",
+  "type": "module",
+  "main": "index.ts",
+  "clawdbot": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@sinclair/typebox": "^0.34.47",
+    "@supabase/supabase-js": "^2.99.0",
+    "openai": "^6.27.0",
+    "zod": "^3.23.0"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "id": "memory-guardian",
+  "kind": "memory",
+  "uiHints": {
+    "supabaseUrl": {
+      "label": "Supabase URL",
+      "placeholder": "https://xxx.supabase.co"
+    },
+    "supabaseServiceKey": {
+      "label": "Supabase Service Role Key",
+      "sensitive": true,
+      "placeholder": "eyJhbGciOi..."
+    },
+    "orgId": {
+      "label": "Organization ID",
+      "placeholder": "00000000-0000-0000-0000-000000000001",
+      "help": "Tenant org_id for memory scoping"
+    },
+    "embedding.apiKey": {
+      "label": "Embedding API Key",
+      "sensitive": true,
+      "placeholder": "sk-proj-...",
+      "help": "API key for embedding provider (or use ${OPENAI_API_KEY})"
+    },
+    "embedding.model": {
+      "label": "Embedding Model",
+      "placeholder": "text-embedding-3-small"
+    },
+    "embedding.provider": {
+      "label": "Embedding Provider",
+      "placeholder": "openai",
+      "help": "Embedding provider (e.g. openai)"
+    },
+    "anthropicApiKey": {
+      "label": "Anthropic API Key",
+      "sensitive": true,
+      "placeholder": "sk-ant-...",
+      "help": "API key for Claude-based Guardian agents"
+    },
+    "humanMappings": {
+      "label": "Human Mappings",
+      "help": "Map sessionKey identifiers to human UUIDs (e.g. {\"telegram:12345\": \"uuid-here\"})"
+    },
+    "autoCapture": {
+      "label": "Auto-Capture",
+      "help": "Automatically capture important information from conversations"
+    },
+    "autoRecall": {
+      "label": "Auto-Recall",
+      "help": "Automatically inject relevant memories into context"
+    },
+    "enableConsolidator": {
+      "label": "Enable Consolidator",
+      "help": "Enable the background consolidator agent for memory deduplication/merging"
+    },
+    "enableCurator": {
+      "label": "Enable Curator",
+      "help": "Enable the background curator agent for memory quality management"
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "supabaseUrl": { "type": "string" },
+      "supabaseServiceKey": { "type": "string" },
+      "orgId": { "type": "string" },
+      "embedding": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "provider": { "type": "string" },
+          "model": { "type": "string" },
+          "apiKey": { "type": "string" }
+        },
+        "required": ["provider", "apiKey"]
+      },
+      "anthropicApiKey": { "type": "string" },
+      "humanMappings": {
+        "type": "object",
+        "additionalProperties": { "type": "string" },
+        "description": "Maps sessionKey to human UUID"
+      },
+      "autoCapture": { "type": "boolean" },
+      "autoRecall": { "type": "boolean" },
+      "enableConsolidator": { "type": "boolean" },
+      "enableCurator": { "type": "boolean" },
+      "consolidatorIntervalMs": { "type": "number" },
+      "curatorIntervalMs": { "type": "number" },
+      "recallLimit": { "type": "number" },
+      "recallMinScore": { "type": "number" },
+      "extractionMaxPerSession": { "type": "number" }
+    },
+    "required": ["supabaseUrl", "supabaseServiceKey", "orgId", "embedding", "anthropicApiKey"]
+  }
+}

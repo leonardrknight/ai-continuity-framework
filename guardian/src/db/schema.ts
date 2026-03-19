@@ -253,3 +253,39 @@ export interface MatchMemoryResult {
   keyword_score: number;
   combined_score: number;
 }
+
+// -- Three-Plane Knowledge Types --
+
+export type KnowledgePlane = 'company' | 'role' | 'private';
+
+export interface HumanProfile {
+  id: string;
+  org_id: string;
+  display_name: string;
+  external_ids: Record<string, string>;
+  role_id: string | null;
+  status: 'active' | 'departed' | 'suspended';
+  departed_at: string | null;
+  summary: string | null;
+  communication_style: Record<string, unknown> | null;
+  interests: string[] | null;
+  expertise: string[] | null;
+  strengths: string[] | null;
+  growth_areas: string[] | null;
+  preferences: Record<string, unknown> | null;
+  last_interaction: string | null;
+  interaction_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Role {
+  id: string;
+  org_id: string;
+  title: string;
+  description: string | null;
+  authority_level: 'founder' | 'executive' | 'employee' | 'shareholder';
+  company_plane_scope: 'full' | 'filtered' | 'none';
+  company_plane_filters: string[] | null;
+  created_at: string;
+}

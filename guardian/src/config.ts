@@ -55,3 +55,16 @@ export function isGitHubConfigured(): boolean {
 export function isInngestConfigured(): boolean {
   return !!(process.env.INNGEST_EVENT_KEY || process.env.INNGEST_SIGNING_KEY);
 }
+
+const coreEnvSchema = z.object({
+  SUPABASE_URL: z.string().url(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  ANTHROPIC_API_KEY: z.string().min(1),
+  OPENAI_API_KEY: z.string().min(1),
+});
+
+export type CoreEnv = z.infer<typeof coreEnvSchema>;
+
+export function loadCoreConfig(): CoreEnv {
+  return coreEnvSchema.parse(process.env);
+}

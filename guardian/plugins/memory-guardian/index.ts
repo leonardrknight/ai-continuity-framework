@@ -723,6 +723,33 @@ Raw message: ${rawMessage}`,
       return ranked.slice(0, limit);
     }
 
+    // ========================================================================
+    // Memory Type Normalization (used by auto-capture AND memory_store tool)
+    // ========================================================================
+
+    /** Map memory types to Guardian's allowed set */
+    const VALID_MEMORY_TYPES = new Set([
+      "fact",
+      "decision",
+      "preference",
+      "pattern",
+      "question",
+      "action_item",
+      "relationship",
+    ]);
+    const TYPE_MAP: Record<string, string> = {
+      event: "fact",
+      summary: "fact",
+      session_summary: "fact",
+      entity: "fact",
+      other: "fact",
+    };
+    function normalizeMemoryType(t: string | undefined | null): string {
+      if (!t) return "fact";
+      if (VALID_MEMORY_TYPES.has(t)) return t;
+      return TYPE_MAP[t] ?? "fact";
+    }
+
     /**
      * Format a human profile into an XML context block.
      * Returns null if the profile has no useful data.
@@ -1146,7 +1173,7 @@ Raw message: ${rawMessage}`,
                 .insert({
                   content: memory.content,
                   content_embedding: embedding,
-                  memory_type: memory.memory_type || "fact",
+                  memory_type: normalizeMemoryType(memory.memory_type),
                   topics: memory.topics ?? [],
                   entities: memory.entities ?? [],
                   importance_score: memory.importance_score ?? 0.5,
@@ -2077,7 +2104,7 @@ Return JSON with these fields (no markdown fencing):
               .insert({
                 content: text,
                 content_embedding: embedding,
-                memory_type,
+                memory_type: normalizeMemoryType(memory_type),
                 topics: tags,
                 entities: [],
                 importance_score: 0.5,

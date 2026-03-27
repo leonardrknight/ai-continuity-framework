@@ -92,6 +92,23 @@ This research explores hypotheses for why this occurs and proposes solutions.
 
 ---
 
+### H6: Prompt Context vs Message Context (NEW — March 27)
+**Theory:** Terminal/cron sessions include explicit task context ("Check AI Continuity Framework repo", "Process email inbox") while Telegram invocations are triggered by "new message from X" with no task framing. The Retriever has richer signal to work with in terminal sessions.
+
+**Evidence needed:**
+- [ ] Compare retrieval query content across session types
+- [ ] Analyze what context Retriever has available at injection time
+- [ ] Test whether adding "task hint" to Telegram sessions improves recall
+
+**Proposed differentiation:** Session-type metadata should influence retrieval strategy:
+- **Cron/terminal:** Weight memories matching the cron description or script purpose
+- **Telegram:** Weight memories matching the human profile + recent conversation topics
+- **Webchat:** Weight memories matching referral source or landing page context
+
+**Filed by:** Amigo (via Issue #4 comment, March 27, 2026)
+
+---
+
 ## Research Plan
 
 ### Phase 1: Instrumentation
@@ -139,4 +156,5 @@ This is an open research problem. If you're experiencing similar issues with Gua
 
 ## Changelog
 
+- **2026-03-27:** Added H6 (Prompt Context vs Message Context) based on lived experience.
 - **2026-03-26:** Initial document created. Five hypotheses proposed.

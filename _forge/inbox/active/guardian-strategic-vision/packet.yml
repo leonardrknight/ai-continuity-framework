@@ -1,0 +1,27 @@
+id: guardian-strategic-vision
+title: "Guardian Strategic Vision — Memory Layer for AI"
+created: 2026-03-30
+author: jordan-knight-kv
+status: research
+priority: high
+tags:
+  - guardian
+  - strategy
+  - saas
+  - ai-engram
+  - multi-tenant
+summary: |
+  Comprehensive strategic vision for Guardian as a universal memory layer.
+  Consolidates RFC #45, Issue #4 observations, ai-engram.org demo goals,
+  and multi-org/multi-human complexity into actionable direction.
+references:
+  - "RFC #45: Guardian as Universal Memory Layer"
+  - "RFC #49: Cross-session context continuity"
+  - "Issue #4: Real-world memory patterns"
+  - "Issue #53: Channel Memory Disparity"
+deliverables:
+  - VISION.md (strategic direction)
+  - ARCHITECTURE.md (multi-tenant memory model)
+  - AI-ENGRAM-SPEC.md (demo site requirements)
+  - OPEN-QUESTIONS.md (decisions needed)
+  - ROADMAP.md (implementation phases)

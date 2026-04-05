@@ -579,7 +579,12 @@ Raw message: ${rawMessage}`,
         if (!content)
           return { query: rawMessage, recencyDays: null, skip: false };
 
-        const parsed = JSON.parse(content);
+        // Strip markdown code fences if present (LLM sometimes wraps JSON)
+        let jsonStr = content.trim();
+        if (jsonStr.startsWith("```")) {
+          jsonStr = jsonStr.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?```\s*$/, "");
+        }
+        const parsed = JSON.parse(jsonStr);
         return {
           query:
             typeof parsed.query === "string" && parsed.query.length > 3
@@ -1707,7 +1712,15 @@ Return JSON with these fields (no markdown fencing):
               const profileText = profileResp.content[0]?.type === "text" ? profileResp.content[0].text : null;
               if (profileText) {
                 try {
-                  const profile = JSON.parse(profileText);
+                  // Strip markdown code fences if present (LLM sometimes wraps JSON)
+                  let jsonStr = profileText.trim();
+                  if (jsonStr.startsWith("```")) {
+                    // Remove opening fence (```json or ```)
+                    jsonStr = jsonStr.replace(/^```(?:json)?\s*\n?/, "");
+                    // Remove closing fence
+                    jsonStr = jsonStr.replace(/\n?```\s*$/, "");
+                  }
+                  const profile = JSON.parse(jsonStr);
                   await supabase.from("humans").update({
                     summary: profile.summary ?? null,
                     interests: profile.interests ?? null,
@@ -1717,8 +1730,9 @@ Return JSON with these fields (no markdown fencing):
                   profilesRefreshed++;
                   // Clear profile cache for this human
                   profileCache.delete(human.id);
-                } catch {
-                  api.logger.warn(`memory-guardian: curator profile parse failed for ${human.id}`);
+                } catch (parseErr) {
+                  api.logger.warn(`memory-guardian: curator profile parse failed for ${human.id}: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`);
+                  api.logger.debug(`memory-guardian: raw profile response: ${profileText.slice(0, 200)}...`);
                   errors++;
                 }
               }

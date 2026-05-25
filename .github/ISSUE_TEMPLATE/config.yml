@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "📖 Read first: WHERE-WE-ARE.md"
+    url: https://github.com/leonardrknight/ai-continuity-framework/blob/main/WHERE-WE-ARE.md
+    about: Current state — proven / learned / hypothesized / next. Orient here before filing.
+  - name: "❓ Read first: OPEN-QUESTIONS.md"
+    url: https://github.com/leonardrknight/ai-continuity-framework/blob/main/OPEN-QUESTIONS.md
+    about: The hypotheses we hold tentatively. If your contribution fits one, link it.
+  - name: "🤝 Live demo: ai-engram.org"
+    url: https://ai-engram.org
+    about: See Guardian in action — what this framework enables.
+  - name: "✉️ Mi Amigos AI"
+    url: https://miamigos.ai
+    about: Partnership conversations, Steward deployment for your organization.

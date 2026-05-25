@@ -1,6 +1,13 @@
 .metrics/
 .vercel
+.env
 .env.local
+.env.*
 .env*.local
+!.env.example
 node_modules/
 guardian/dist/
+
+# Supabase CLI artifacts
+**/.temp/
+**/supabase/.temp/

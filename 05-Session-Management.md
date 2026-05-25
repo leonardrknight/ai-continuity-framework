@@ -1,5 +1,8 @@
 # Session Management: Handling Multiple Contexts
 
+> **📍 Framing note (added 2026-05-25):** This chapter was written Feb–Mar 2026, before we articulated the **Steward category**. The *concepts* here remain foundational; the *framing* has evolved. For current state see [WHERE-WE-ARE.md](WHERE-WE-ARE.md). For what a Steward IS (vs. an AI assistant), see [THE-STEWARD-CATEGORY.md](THE-STEWARD-CATEGORY.md). Read this chapter for the foundations; read those for current canon.
+
+
 ---
 
 ## The Challenge

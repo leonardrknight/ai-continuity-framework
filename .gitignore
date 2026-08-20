@@ -1,7 +1,10 @@
 .metrics/
 .vercel
+.env
 .env.local
+.env.*
 .env*.local
+!.env.example
 node_modules/
 guardian/dist/
 
@@ -12,3 +15,7 @@ abc/
 FORGE-AUTONOMY.yml
 JORDAN-PLAN.md
 CLAUDE.md
+
+# Supabase CLI artifacts
+**/.temp/
+**/supabase/.temp/

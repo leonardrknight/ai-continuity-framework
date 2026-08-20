@@ -4,3 +4,10 @@
 .env*.local
 node_modules/
 guardian/dist/
+
+# FORGE tooling & internal planning (Knight Ventures IP — not published; 2026-08-20)
+.claude/
+_forge/
+abc/
+FORGE-AUTONOMY.yml
+JORDAN-PLAN.md
